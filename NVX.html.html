@@ -1,0 +1,479 @@
+<!-- Nút bật popup -->  
+<div class="popup-toggle-btn" onclick="showPopup()">🎁</div>
+
+<style>
+  .popup-toggle-btn {
+    position: fixed;
+    bottom: 10%;
+    left: 0;
+    background-color: #d60000;
+    color: white;
+    font-size: 22px;
+    padding: 10px 14px;
+    border-radius: 0 10px 10px 0;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .popup-widget * { box-sizing: border-box; }
+  .popup-widget {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    font-family: 'Arial', sans-serif;
+  }
+  .popup-form {
+    background: #ffffff;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+  .popup-form::before {
+    content: "";
+    background: url('https://www.ngocanhcm.vn/data/category/thongtinweb.png') no-repeat center center;
+    background-size: 110%;
+    opacity: 0.15;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+  .popup-form > * { position: relative; z-index: 1; }
+  .popup-form h2, .popup-form p {
+    text-align: center;
+    font-weight: 700;
+  }
+  .popup-form h2 { font-size: 18px; color: #222; margin-bottom: 8px; }
+  .popup-form p { font-size: 14px; color: #d62828; margin-bottom: 16px; }
+  .popup-form input[type="text"], .popup-form input[type="email"] {
+    width: 100%; padding: 10px; margin: 8px 0;
+    border: 1px solid #ccc; border-radius: 8px;
+    background: transparent; color: #000;
+    font-size: 15px; font-weight: 500;
+  }
+  .popup-form input::placeholder { color: #111; opacity: 1; }
+  .popup-form input[type="checkbox"] { margin-right: 6px; }
+  .popup-form label {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    margin-top: 6px;
+  }
+  .popup-form button {
+    background: red; color: white;
+    padding: 12px 16px; border: none;
+    border-radius: 8px; font-weight: bold;
+    cursor: pointer; margin-top: 10px;
+  }
+  .popup-form a.dismiss-link {
+    margin-left: 12px; color: blue;
+    text-decoration: underline;
+    cursor: pointer; font-size: 14px;
+  }
+  .close-btn {
+    position: absolute;
+    top: 12px; right: 16px;
+    cursor: pointer; font-size: 22px;
+    color: #666; z-index: 2;
+  }
+  #successMessage {
+    display: none;
+    text-align: left;
+    margin-top: 20px;
+    line-height: 1.5;
+    font-size: 14px;
+  }
+  #successMessage h3 {
+    color: green;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  #successMessage p { margin: 6px 0; }
+  #successMessage span#couponCode,
+  #successMessage span#wonValue {
+    color: red;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  @media (max-width: 480px) {
+    .popup-form { max-width: 90%; padding: 16px; }
+  }
+  .site-footer {
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+    padding: 10px 8px;
+    border-top: 1px solid #ddd;
+    margin-top: 18px;
+  }
+  .site-footer strong { color: #111; }
+  /* ==== Hiển thị giải thưởng đẹp trong popup ==== */
+.gift-text {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: red;
+  line-height: 1.4;
+  margin: 6px 0 10px 0;
+}
+
+/* ==== STYLE VÒNG QUAY CAO CẤP ==== */
+  #wheelContainer { display: none; margin-top: 10px; text-align: center; }
+
+  #wheel {
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto;
+    border: 6px solid #fff;
+    box-shadow: 0 0 25px rgba(255,255,255,0.4), inset 0 0 35px rgba(255,255,255,0.2);
+    transition: transform 5s cubic-bezier(.23,1,.32,1);
+  }
+
+  .wheel-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 0 auto;
+  }
+
+  /* Mũi tên */
+  .arrow {
+    position: absolute;
+    top: -20px; left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 18px solid transparent;
+    border-right: 18px solid transparent;
+    border-bottom: 26px solid #ffde59;
+    filter: drop-shadow(0 0 6px #fff);
+    z-index: 15;
+  }
+
+  /* Nút QUAY */
+  .center-button {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #ff007a, #ffde59);
+    border: 4px solid white;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 20px #ff007a, 0 0 40px #ffde59, inset 0 0 10px rgba(255,255,255,.5);
+    user-select: none; z-index: 10;
+    transition: all .3s ease;
+  }
+  .center-button:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow: 0 0 25px #ffde59, 0 0 55px #ff007a;
+  }
+  .center-button span { color: white; font-weight: bold; font-size: 14px; }
+  .center-button .pointer {
+    position: absolute; top: 4px; left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 15px solid #fff;
+    filter: drop-shadow(0 0 4px #fff);
+  }
+
+  #result {
+    margin-top: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
+    min-height: 28px;
+  }
+</style>
+
+<!-- Popup chính -->
+<div class="popup-widget" style="display: none;">
+  <div class="popup-form">
+    <span class="close-btn" title="Đóng" tabindex="0">×</span>
+    <h2>ƯU ĐÃI GIỚI HẠN ĐĂNG KÝ NGAY!</h2>
+    <p>XE NGỌC ANH – CHÍNH HÃNG - GIÁ TỐT</p>
+
+    <form id="registerForm">
+      <input type="text" name="name" placeholder="Tên của Anh/Chị:*" required />
+      <input type="text" name="phone" placeholder="Số điện thoại:*" required />
+      <input type="text" name="address" placeholder="Địa chỉ liên hệ:*" required />
+      <input type="text" name="car" placeholder="Dòng xe đang quan tâm:*" required />
+      <input type="text" name="note" placeholder="Yêu cầu khác (nếu có):" />
+      <label><input type="checkbox" required /> Tôi đồng ý với điều khoản của Xe Ngọc Anh</label>
+      <button type="submit" id="submitBtn">ĐĂNG KÝ NGAY</button>
+      <a class="dismiss-link" tabindex="0">Bữa khác nha!</a>
+    </form>
+
+    <!-- Vòng quay -->
+    <div id="wheelContainer">
+      <div class="wheel-container">
+        <div class="arrow"></div>
+        <canvas id="wheel" width="300" height="300"></canvas>
+        <div class="center-button" id="spinBtn" tabindex="0"> 
+          <div class="pointer"></div>
+          <span>Quay</span>
+        </div>
+      </div>
+      <div id="result"></div>
+    </div>
+
+    <div id="successMessage">
+      <h3>🎉 Cảm ơn Anh/Chị <span id="showName"></span> Đã đăng ký!</h3>
+      <p>MÃ QUÀ TẶNG CỦA BẠN LÀ: <span id="couponCode"></span></p>
+      <p>ANH CHỊ NHẬN ĐƯỢC QUÀ TẶNG LÀ 01:</p>
+<div id="wonValue" class="gift-text"></div>
+      <p>VUI LÒNG CHỤP MÀN HÌNH HOẶC ĐỌC TÊN KHI NHẬN QUÀ TẶNG.</p>
+      <p>🔔 “Voucher giảm giá không quy đổi thành tiền mặt và chỉ áp dụng 01 mã khi mua xe. Mã giảm giá được QuangCaoAds lưu để đối chiếu khi thanh toán.”</p>
+    </div>
+
+    <div class="site-footer">
+      © 2025 Bản quyền thuộc về <strong>QuangCaoAds</strong> | Thiết kế bởi <strong>MKT HLAds – Xe Ngọc Anh Cà Mau</strong>
+    </div>
+  </div>
+</div>
+
+<!-- Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script type="text/javascript">
+var canvas=document.getElementById("wheel");
+var ctx=canvas.getContext("2d");
+var size=canvas.width;
+var center=size/2;
+
+var segments=["Móc Khóa","Nón <br> bảo hiểm","Áo Mưa","Bộ Ly <br> Thủy tinh","Voucher <br> 500.000đ","Voucher <br> 1.000.000đ"];
+var colors=[
+ ["#0099ff","#0059b3"],
+ ["#00c2ff","#007ca3"],
+ ["#00ffcc","#00b386"],
+ ["#ffde59","#c4a000"],
+ ["#ff5ebc","#c7007a"],
+ ["#a18cd1","#6e5aa4"]
+];
+var arc = (2 * Math.PI) / segments.length;
+var spinAngle = 0, spinning = false;
+
+function drawWheel() {
+  for (var i = 0; i < segments.length; i++) {
+    var angle = i * arc;
+    var grad = ctx.createLinearGradient(0, 0, size, size);
+    grad.addColorStop(0, colors[i][0]);
+    grad.addColorStop(1, colors[i][1]);
+    ctx.fillStyle = grad;
+
+    ctx.beginPath();
+    ctx.moveTo(center, center);
+    ctx.arc(center, center, center, angle, angle + arc, false);
+    ctx.fill();
+
+    // 🟩 Căn giữa chữ và xuống dòng gọn
+    ctx.save();
+    ctx.translate(center, center);
+    ctx.rotate(angle + arc / 2);
+    ctx.fillStyle = "white";
+    ctx.font = "bold 16px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    var lines = segments[i].split("<br>");
+    var lineHeight = 18;          
+    var textRadius = center - 45; // 👈 điều chỉnh chỗ này cho đẹp
+
+    for (var j = 0; j < lines.length; j++) {
+      var lineY = (j - (lines.length - 1) / 2) * lineHeight;
+      ctx.fillText(lines[j].trim(), textRadius, lineY);
+    }
+
+    ctx.restore();
+  }
+}
+drawWheel();
+
+
+ function spin() {
+  if (spinning) return;
+  spinning = true;
+  var validIndices = [1, 3];
+  var selectedIndex = validIndices[Math.floor(Math.random() * validIndices.length)];
+  var segmentDegree = 360 / segments.length;
+  var segmentCenterDegree = selectedIndex * segmentDegree + segmentDegree / 2;
+  var spins = Math.floor(Math.random() * 4 + 4);
+  var finalDegree = spins * 360 + (360 + 270 - segmentCenterDegree) % 360;
+  var finalRad = finalDegree * Math.PI / 180;
+  var duration = 4000; var start = null;
+
+  function rotateWheel(timestamp) {
+    if (!start) start = timestamp;
+    var progress = timestamp - start;
+    var easing = 1 - Math.pow(1 - progress / duration, 3);
+    spinAngle = finalRad * easing;
+    ctx.clearRect(0, 0, size, size);
+    ctx.save(); ctx.translate(center, center); ctx.rotate(spinAngle); ctx.translate(-center, -center);
+    drawWheel(); ctx.restore();
+    if (progress < duration) { requestAnimationFrame(rotateWheel); }
+    else {
+      window.pendingSegment = segments[selectedIndex];
+
+      // Lưu lại phần thưởng lần đầu hoặc lần hai nếu chưa có
+      var history = JSON.parse(localStorage.getItem("spinHistory") || "{}");
+      var phone = document.getElementById('registerForm').elements['phone'].value.trim();
+      if (history[phone]) {
+        if (!history[phone].firstPrize) {
+          history[phone].firstPrize = window.pendingSegment;
+        } else if (!history[phone].secondPrize) {
+          history[phone].secondPrize = window.pendingSegment;
+        }
+        localStorage.setItem("spinHistory", JSON.stringify(history));
+      }
+
+      document.getElementById("result").innerText = "🎉 Bạn trúng: " + window.pendingSegment;
+      spinning = false;
+      window.showSuccessAfterSpin();
+    }
+  }
+  requestAnimationFrame(rotateWheel);
+}
+
+function showPopup() {
+  if (localStorage.getItem('popupDismissed') === 'true') return;
+
+  document.querySelector('.popup-widget').style.display = 'flex';
+
+  if (typeof confetti !== 'undefined') {
+    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+    setTimeout(function () {
+      confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+    }, 500);
+  }
+}
+  localStorage.clear(); // reset lại mọi dữ liệu mỗi lần load
+  window.addEventListener('load', function () {
+  var popup = document.querySelector('.popup-widget');
+  var closeBtn = document.querySelector('.popup-form .close-btn');
+  var dismissLink = document.querySelector('.popup-form .dismiss-link');
+  var form = document.getElementById('registerForm');
+  var successMessage = document.getElementById('successMessage');
+  var wheelContainer = document.getElementById('wheelContainer');
+  var spinBtn = document.getElementById('spinBtn');
+
+  // Kiểm tra nếu đã điền form
+  if (!localStorage.getItem('popupDismissed') && !localStorage.getItem('formSubmitted')) {
+    showPopup();
+  }
+
+  function hidePopup() { popup.style.display = 'none'; }
+  closeBtn.addEventListener('click', hidePopup);
+  dismissLink.addEventListener('click', function () {
+    hidePopup();
+    localStorage.setItem('popupDismissed', 'flase');
+  });
+
+  function isPhoneValid(phone) {
+    return /^0\d{9}$/.test(phone);
+  }
+
+form.addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  var name = form.elements['name'].value.trim();
+  var phone = form.elements['phone'].value.trim();
+  var address = form.elements['address'].value.trim();
+  var car = form.elements['car'].value.trim();
+  var note = form.elements['note'].value.trim();
+
+  if (!isPhoneValid(phone)) {
+    alert('Số điện thoại không hợp lệ (phải có 10 số và bắt đầu bằng 0).');
+    form.elements['phone'].focus();
+    return;
+  }
+// Bỏ hoàn toàn giới hạn lần quay
+  var couponCode = 'NA' + Math.floor(100000 + Math.random() * 900000);
+  window.pendingUserName = name;
+  window.pendingCouponCode = couponCode;
+
+  // Lưu lịch sử (nếu bạn vẫn muốn lưu cho vui)
+  var history = JSON.parse(localStorage.getItem("spinHistory") || "{}");
+  history[phone] = { lastCoupon: couponCode };
+  localStorage.setItem("spinHistory", JSON.stringify(history));
+
+  // Hiển thị vòng quay
+  form.style.display = 'none';
+  wheelContainer.style.display = 'block';
+  document.getElementById('result').innerText = '';
+  localStorage.setItem('popupDismissed', 'Flase');
+});
+
+  window.showSuccessAfterSpin = function () {
+    wheelContainer.style.display = 'none';
+    successMessage.style.display = 'block';
+    document.getElementById('showName').innerText = window.pendingUserName || '';
+    document.getElementById('couponCode').innerText = window.pendingCouponCode || '';
+    // Hiển thị 1 dòng gọn trong popup, loại bỏ thẻ <br>
+    document.getElementById('wonValue').innerHTML = (window.pendingSegment || '').replace(/<br\s*\/?>/gi, ' ');
+
+    var formData = new FormData();
+    formData.append('entry.2068377047', window.pendingUserName);
+
+    var phoneInput = document.querySelector('input[name="phone"]');
+    var addressInput = document.querySelector('input[name="address"]');
+    var carInput = document.querySelector('input[name="car"]');
+    var noteInput = document.querySelector('input[name="note"]');
+
+    formData.append('entry.1431142738', phoneInput ? phoneInput.value.trim() : '');
+    formData.append('entry.450626231', addressInput ? addressInput.value.trim() : '');
+    formData.append('entry.188096586', carInput ? carInput.value.trim() : '');
+    formData.append('entry.350180116', noteInput ? noteInput.value.trim() : '');
+    formData.append('entry.147650368', window.pendingCouponCode);
+    formData.append('entry.1042830072', window.pendingSegment);
+
+    fetch("https://docs.google.com/forms/d/e/1FAIpQLScnHCm5eImjHVn6JQslb7eLWYE81YHPaVY1k9qJCreQesq5CQ/formResponse", {
+      method: "POST", body: formData, mode: "no-cors"
+    });
+  };
+
+  spinBtn.addEventListener('click', spin);
+});
+</script>
+
+<!-- Script chống copy trong popup -->
+<script>
+  const popup = document.querySelector('.popup-widget');
+
+  // Chặn chuột phải
+  document.addEventListener('contextmenu', e => {
+    if (e.target.closest('.popup-widget')) e.preventDefault();
+  });
+
+  // Chặn tổ hợp phím sao chép, devtool, lưu, xem mã
+  document.addEventListener('keydown', e => {
+    if (e.target.closest('.popup-widget')) {
+      const forbidden = ['u', 's', 'c', 'x', 'i'];
+      if ((e.ctrlKey && forbidden.includes(e.key.toLowerCase())) || e.key === 'F12') {
+        e.preventDefault();
+      }
+    }
+  });
+
+  // Chặn bôi đen & copy thủ công
+  if (popup) {
+    popup.style.userSelect = 'none';
+    popup.addEventListener('copy', e => e.preventDefault());
+    popup.addEventListener('cut', e => e.preventDefault());
+  }
+</script>
+
