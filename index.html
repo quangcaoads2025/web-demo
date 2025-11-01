@@ -308,7 +308,7 @@ drawWheel();
  function spin() {
   if (spinning) return;
   spinning = true;
-  var validIndices = [1, 3];
+  var validIndices = [1, 2, 3];
   var selectedIndex = validIndices[Math.floor(Math.random() * validIndices.length)];
   var segmentDegree = 360 / segments.length;
   var segmentCenterDegree = selectedIndex * segmentDegree + segmentDegree / 2;
