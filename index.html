@@ -256,7 +256,7 @@ var ctx=canvas.getContext("2d");
 var size=canvas.width;
 var center=size/2;
 
-var segments=["MÓC KHÓA","NÓN <br> BẢO HIỂM","ÁO MƯA","BỘ LY <br> THỦY TINH","Voucher <br> 500.000đ","Voucher <br> 1.000.000đ"];
+var segments=["Chúc Bạn may<br>Lần sau","NÓN <br> BẢO HIỂM","ÁO MƯA","BỘ LY <br> THỦY TINH","Voucher <br> 500.000đ","Voucher <br> 1.000.000đ"];
 var colors=[
  ["#0099ff","#0059b3"],
  ["#00c2ff","#007ca3"],
@@ -308,7 +308,7 @@ drawWheel();
  function spin() {
   if (spinning) return;
   spinning = true;
-  var validIndices = [1, 2, 3];
+  var validIndices = [0];
   var selectedIndex = validIndices[Math.floor(Math.random() * validIndices.length)];
   var segmentDegree = 360 / segments.length;
   var segmentCenterDegree = selectedIndex * segmentDegree + segmentDegree / 2;
