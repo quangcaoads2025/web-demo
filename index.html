@@ -439,7 +439,7 @@ form.addEventListener('submit', function (e) {
     formData.append('entry.188096586', carInput ? carInput.value.trim() : '');
     formData.append('entry.350180116', noteInput ? noteInput.value.trim() : '');
     formData.append('entry.147650368', window.pendingCouponCode);
-    formData.append('entry.1042830072', window.pendingSegment);
+    formData.append('entry.1042830072', (window.pendingSegment || '').replace(/<br\s*\/?>/gi, ' '));
 
     fetch("https://docs.google.com/forms/d/e/1FAIpQLScnHCm5eImjHVn6JQslb7eLWYE81YHPaVY1k9qJCreQesq5CQ/formResponse", {
       method: "POST", body: formData, mode: "no-cors"
