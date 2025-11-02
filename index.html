@@ -251,20 +251,57 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script type="text/javascript">
-var canvas=document.getElementById("wheel");
-var ctx=canvas.getContext("2d");
-var size=canvas.width;
-var center=size/2;
+var canvas = document.getElementById("wheel");
+var ctx = canvas.getContext("2d");
+var size = canvas.width;
+var center = size / 2;
 
-var segments=["Chúc Bạn<br>may mắn<br>Lần sau","NÓN<br>BẢO HIỂM","ÁO MƯA","BỘ LY<br>THỦY TINH","Voucher<br>500.000đ","Voucher<br>1.000.000đ"];
-var colors=[
- ["#0099ff","#0059b3"],
- ["#00c2ff","#007ca3"],
- ["#00ffcc","#00b386"],
- ["#ffde59","#c4a000"],
- ["#ff5ebc","#c7007a"],
- ["#a18cd1","#6e5aa4"]
+var segments = [
+  "Chúc Bạn<br>may mắn<br>Lần sau",
+  "NÓN<br>BẢO HIỂM",
+  "ÁO MƯA",
+  "BỘ LY<br>THỦY TINH",
+  "Voucher<br>500.000đ",
+  "Voucher<br>1.000.000đ"
 ];
+var colors = [
+  ["#0099ff","#0059b3"],
+  ["#00c2ff","#007ca3"],
+  ["#00ffcc","#00b386"],
+  ["#ffde59","#c4a000"],
+  ["#ff5ebc","#c7007a"],
+  ["#a18cd1","#6e5aa4"]
+];
+
+// ===== Giới hạn quà =====
+// Luôn reset tỉ lệ chuẩn khi mở trang (cho mọi máy, mọi trình duyệt)
+// ===== Giới hạn quà =====
+var defaultGiftLimits = {
+  "BỘ LY<br>THỦY TINH": 32,
+  "NÓN<br>BẢO HIỂM": 8,
+  "ÁO MƯA": 5,
+  "Chúc Bạn<br>may mắn<br>Lần sau": 10
+};
+
+// 🔹 Nếu chưa có dữ liệu thì tạo mới, nếu có thì giữ nguyên
+var giftLimits = JSON.parse(localStorage.getItem("giftLimits") || JSON.stringify(defaultGiftLimits));
+
+
+// ✅ Khôi phục giới hạn quà đã lưu trước đó
+if (localStorage.getItem("giftLimits")) {
+  try {
+    var savedLimits = JSON.parse(localStorage.getItem("giftLimits"));
+    for (var key in savedLimits) {
+      if (giftLimits[key] !== undefined) giftLimits[key] = savedLimits[key];
+    }
+  } catch (e) { console.warn("Gift limit restore error", e); }
+}
+
+function getAvailablePrize(validIndices) {
+  var available = validIndices.filter(i => !(giftLimits[segments[i]] <= 0));
+  return available.length ? available[Math.floor(Math.random()*available.length)] : -1;
+}
+
 var arc = (2 * Math.PI) / segments.length;
 var spinAngle = 0, spinning = false;
 
@@ -281,7 +318,6 @@ function drawWheel() {
     ctx.arc(center, center, center, angle, angle + arc, false);
     ctx.fill();
 
-    // 🟩 Căn giữa chữ và xuống dòng gọn
     ctx.save();
     ctx.translate(center, center);
     ctx.rotate(angle + arc / 2);
@@ -291,78 +327,104 @@ function drawWheel() {
     ctx.textBaseline = "middle";
 
     var lines = segments[i].split("<br>");
-    var lineHeight = 18;          
-    var textRadius = center - 45; // 👈 điều chỉnh chỗ này cho đẹp
-
+    var lineHeight = 18;
+    var textRadius = center - 45;
     for (var j = 0; j < lines.length; j++) {
       var lineY = (j - (lines.length - 1) / 2) * lineHeight;
       ctx.fillText(lines[j].trim(), textRadius, lineY);
     }
-
     ctx.restore();
   }
 }
 drawWheel();
 
-
- function spin() {
+function spin() {
   if (spinning) return;
   spinning = true;
-  var validIndices = [0];
-  var selectedIndex = validIndices[Math.floor(Math.random() * validIndices.length)];
+
+  // 🎯 Cấu hình tỉ lệ phần quà
+  var giftPool = [
+    { name: "BỘ LY<br>THỦY TINH", count: giftLimits["BỘ LY<br>THỦY TINH"] ?? 32 },
+    { name: "NÓN<br>BẢO HIỂM", count: giftLimits["NÓN<br>BẢO HIỂM"] ?? 8 },
+    { name: "ÁO MƯA", count: giftLimits["ÁO MƯA"] ?? 5 },
+    { name: "Chúc Bạn<br>may mắn<br>Lần sau", count: 10 }
+  ];
+
+  // Tạo mảng pool theo số lượng thực tế
+  var pool = [];
+  giftPool.forEach(function(gift) {
+    for (var i = 0; i < gift.count; i++) pool.push(gift.name);
+  });
+
+  // Nếu tất cả đã hết thì mặc định “Không trúng”
+  if (pool.length === 0) {
+    window.pendingSegment = "Chúc Bạn may mắn Lần sau 🎉";
+    window.showSuccessAfterSpin();
+    spinning = false;
+    return;
+  }
+
+  // Random theo tỉ lệ thực tế
+  var selectedGift = pool[Math.floor(Math.random() * pool.length)];
+  var selectedIndex = segments.findIndex(s => s === selectedGift);
+  if (selectedIndex === -1) selectedIndex = 0;
+
+  // === Hiệu ứng quay ===
   var segmentDegree = 360 / segments.length;
   var segmentCenterDegree = selectedIndex * segmentDegree + segmentDegree / 2;
   var spins = Math.floor(Math.random() * 4 + 4);
   var finalDegree = spins * 360 + (360 + 270 - segmentCenterDegree) % 360;
   var finalRad = finalDegree * Math.PI / 180;
-  var duration = 4000; var start = null;
+  var duration = 4000;
+  var start = null;
 
   function rotateWheel(timestamp) {
     if (!start) start = timestamp;
     var progress = timestamp - start;
     var easing = 1 - Math.pow(1 - progress / duration, 3);
     spinAngle = finalRad * easing;
+
     ctx.clearRect(0, 0, size, size);
-    ctx.save(); ctx.translate(center, center); ctx.rotate(spinAngle); ctx.translate(-center, -center);
-    drawWheel(); ctx.restore();
-    if (progress < duration) { requestAnimationFrame(rotateWheel); }
-    else {
+    ctx.save();
+    ctx.translate(center, center);
+    ctx.rotate(spinAngle);
+    ctx.translate(-center, -center);
+    drawWheel();
+    ctx.restore();
+
+    if (progress < duration) {
+      requestAnimationFrame(rotateWheel);
+    } else {
       window.pendingSegment = segments[selectedIndex];
 
-      // Lưu lại phần thưởng lần đầu hoặc lần hai nếu chưa có
-      var history = JSON.parse(localStorage.getItem("spinHistory") || "{}");
-      var phone = document.getElementById('registerForm').elements['phone'].value.trim();
-      if (history[phone]) {
-        if (!history[phone].firstPrize) {
-          history[phone].firstPrize = window.pendingSegment;
-        } else if (!history[phone].secondPrize) {
-          history[phone].secondPrize = window.pendingSegment;
+      // Trừ 1 phần quà nếu có trong giftLimits
+      if (giftLimits.hasOwnProperty(window.pendingSegment)) {
+        if (giftLimits[window.pendingSegment] > 0) {
+          giftLimits[window.pendingSegment]--;
+          localStorage.setItem("giftLimits", JSON.stringify(giftLimits));
         }
-        localStorage.setItem("spinHistory", JSON.stringify(history));
       }
 
-      document.getElementById("result").innerText = "🎉 Bạn trúng: " + window.pendingSegment;
       spinning = false;
       window.showSuccessAfterSpin();
     }
   }
+
   requestAnimationFrame(rotateWheel);
 }
-
+</script>
+<script>
+// ==== POPUP ====
 function showPopup() {
   if (localStorage.getItem('popupDismissed') === 'true') return;
-
   document.querySelector('.popup-widget').style.display = 'flex';
-
   if (typeof confetti !== 'undefined') {
     confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
-    setTimeout(function () {
-      confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
-    }, 500);
+    setTimeout(() => confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } }), 500);
   }
 }
-  localStorage.clear(); // reset lại mọi dữ liệu mỗi lần load
-  window.addEventListener('load', function () {
+
+window.addEventListener('load', function () {
   var popup = document.querySelector('.popup-widget');
   var closeBtn = document.querySelector('.popup-form .close-btn');
   var dismissLink = document.querySelector('.popup-form .dismiss-link');
@@ -371,69 +433,60 @@ function showPopup() {
   var wheelContainer = document.getElementById('wheelContainer');
   var spinBtn = document.getElementById('spinBtn');
 
-  // Kiểm tra nếu đã điền form
-  if (!localStorage.getItem('popupDismissed') && !localStorage.getItem('formSubmitted')) {
-    showPopup();
-  }
+  // ✅ Luôn cho popup bật lần đầu
+  localStorage.setItem('popupDismissed', 'false');
+  showPopup();
 
   function hidePopup() { popup.style.display = 'none'; }
   closeBtn.addEventListener('click', hidePopup);
   dismissLink.addEventListener('click', function () {
     hidePopup();
-    localStorage.setItem('popupDismissed', 'flase');
+    localStorage.setItem('popupDismissed', 'true');
   });
 
-  function isPhoneValid(phone) {
-    return /^0\d{9}$/.test(phone);
-  }
+  function isPhoneValid(phone) { return /^0\d{9}$/.test(phone); }
 
-form.addEventListener('submit', function (e) {
-  e.preventDefault();
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = form.elements['name'].value.trim();
+    var phone = form.elements['phone'].value.trim();
+    var address = form.elements['address'].value.trim();
+    var car = form.elements['car'].value.trim();
+    var note = form.elements['note'].value.trim();
 
-  var name = form.elements['name'].value.trim();
-  var phone = form.elements['phone'].value.trim();
-  var address = form.elements['address'].value.trim();
-  var car = form.elements['car'].value.trim();
-  var note = form.elements['note'].value.trim();
+    if (!isPhoneValid(phone)) {
+      alert('Số điện thoại không hợp lệ (phải có 10 số và bắt đầu bằng 0).');
+      form.elements['phone'].focus();
+      return;
+    }
 
-  if (!isPhoneValid(phone)) {
-    alert('Số điện thoại không hợp lệ (phải có 10 số và bắt đầu bằng 0).');
-    form.elements['phone'].focus();
-    return;
-  }
-// Bỏ hoàn toàn giới hạn lần quay
-  var couponCode = 'NA' + Math.floor(100000 + Math.random() * 900000);
-  window.pendingUserName = name;
-  window.pendingCouponCode = couponCode;
+    var couponCode = 'NA' + Math.floor(100000 + Math.random() * 900000);
+    window.pendingUserName = name;
+    window.pendingCouponCode = couponCode;
 
-  // Lưu lịch sử (nếu bạn vẫn muốn lưu cho vui)
-  var history = JSON.parse(localStorage.getItem("spinHistory") || "{}");
-  history[phone] = { lastCoupon: couponCode };
-  localStorage.setItem("spinHistory", JSON.stringify(history));
+    var history = JSON.parse(localStorage.getItem("spinHistory") || "{}");
+    history[phone] = { lastCoupon: couponCode };
+    localStorage.setItem("spinHistory", JSON.stringify(history));
 
-  // Hiển thị vòng quay
-  form.style.display = 'none';
-  wheelContainer.style.display = 'block';
-  document.getElementById('result').innerText = '';
-  localStorage.setItem('popupDismissed', 'Flase');
-});
+    form.style.display = 'none';
+    wheelContainer.style.display = 'block';
+    document.getElementById('result').innerText = '';
+    localStorage.setItem('popupDismissed', 'true');
+  });
 
   window.showSuccessAfterSpin = function () {
     wheelContainer.style.display = 'none';
     successMessage.style.display = 'block';
     document.getElementById('showName').innerText = window.pendingUserName || '';
     document.getElementById('couponCode').innerText = window.pendingCouponCode || '';
-    // Hiển thị 1 dòng gọn trong popup, loại bỏ thẻ <br>
     document.getElementById('wonValue').innerHTML = (window.pendingSegment || '').replace(/<br\s*\/?>/gi, ' ');
 
     var formData = new FormData();
     formData.append('entry.2068377047', window.pendingUserName);
-
     var phoneInput = document.querySelector('input[name="phone"]');
     var addressInput = document.querySelector('input[name="address"]');
     var carInput = document.querySelector('input[name="car"]');
     var noteInput = document.querySelector('input[name="note"]');
-
     formData.append('entry.1431142738', phoneInput ? phoneInput.value.trim() : '');
     formData.append('entry.450626231', addressInput ? addressInput.value.trim() : '');
     formData.append('entry.188096586', carInput ? carInput.value.trim() : '');
