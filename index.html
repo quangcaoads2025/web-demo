@@ -205,14 +205,20 @@
 <div class="popup-widget" style="display: none;">
   <div class="popup-form">
     <span class="close-btn" title="Đóng" tabindex="0">×</span>
-    <h2>ƯU ĐÃI GIỚI HẠN ĐĂNG KÝ NGAY!</h2>
-    <p>XE NGỌC ANH – CHÍNH HÃNG - GIÁ TỐT</p>
+    <h2>🔥HONDA SPORTY ZONE 2025🔥</h2>
+    <p>XE NGỌC ANH – UY TÍN - CHẤT LƯỢNG - GIÁ TỐT</p>
 
     <form id="registerForm">
       <input type="text" name="name" placeholder="Tên của Anh/Chị:*" required />
       <input type="text" name="phone" placeholder="Số điện thoại:*" required />
       <input type="text" name="address" placeholder="Địa chỉ liên hệ:*" required />
-      <input type="text" name="car" placeholder="Dòng xe lái thử:*" required />
+      <select name="car" required style="width:100%; padding:10px; margin:8px 0; border:1px solid #ccc; border-radius:8px; font-size:15px;">
+        <option value="">Chọn dòng xe lái thử *</option>
+        <option>WINNER R 2025</option>
+        <option>Vario 125</option>
+        <option>Air Blade</option>
+        <option>Wave RSX</option>
+      </select>
       <input type="text" name="note" placeholder="Yêu cầu khác (nếu có):" />
       <label><input type="checkbox" required /> Tôi đồng ý với điều khoản của Xe Ngọc Anh</label>
       <button type="submit" id="submitBtn">ĐĂNG KÝ NGAY</button>
@@ -233,9 +239,8 @@
     </div>
 
     <div id="successMessage">
-      <h3>🎉 Cảm ơn Anh/Chị <span id="showName"></span> Đã đăng ký!</h3>
-      <p>MÃ QUÀ TẶNG CỦA BẠN LÀ: <span id="couponCode"></span></p>
-      <p>CẢM ƠN ANH CHỊ ĐÃ THAM GIA:</p>
+      <h3>🎉CẢM ƠN ANH/CHỊ <span id="showName"></span> ĐÃ THAM GIA!</h3>
+      <p>MÃ QUÀ TẶNG LÀ: <span id="couponCode"></span></p>
 <div id="wonValue" class="gift-text"></div>
       <p>VUI LÒNG CHỤP MÀN HÌNH HOẶC ĐỌC TÊN KHI NHẬN QUÀ TẶNG.</p>
       <p>🔔 “Voucher giảm giá không quy đổi thành tiền mặt và chỉ áp dụng 01 mã khi mua xe. Mã giảm giá được QuangCaoAds lưu để đối chiếu khi thanh toán.”</p>
@@ -251,57 +256,32 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script type="text/javascript">
+// Luôn reset localStorage mỗi lần load trang (theo yêu cầu của anh)
+localStorage.clear();
+
 var canvas = document.getElementById("wheel");
 var ctx = canvas.getContext("2d");
 var size = canvas.width;
 var center = size / 2;
 
 var segments = [
-  "Chúc Bạn<br>may mắn<br>Lần sau",
-  "NÓN<br>BẢO HIỂM",
-  "ÁO MƯA",
-  "BỘ LY<br>THỦY TINH",
-  "Voucher<br>100.000đ",
-  "Voucher<br>200.000đ"
+  "VOUCHER<br>200.000Đ",
+  "VOUCHER<br>300.000Đ",
+  "VOUCHER<br>400.000Đ",
+  "VOUCHER<br>500.000Đ",
+  "VOUCHER<br>1.000.000Đ",
+  "Voucher<br>1.500.000Đ",
+  "Voucher<br>2.000.000Đ"
 ];
 var colors = [
-  ["#0099ff","#0059b3"],
-  ["#00c2ff","#007ca3"],
-  ["#00ffcc","#00b386"],
-  ["#ffde59","#c4a000"],
-  ["#ff5ebc","#c7007a"],
-  ["#a18cd1","#6e5aa4"]
+ ["#0099ff","#0059b3"],
+ ["#00c2ff","#007ca3"],
+ ["#00ffcc","#00b386"],
+ ["#ffde59","#c4a000"],
+ ["#ff5ebc","#c7007a"],
+ ["#a18cd1","#6e5aa4"],
+ ["#ff8c42","#ff5f00"]
 ];
-
-// ===== Giới hạn quà =====
-// Luôn reset tỉ lệ chuẩn khi mở trang (cho mọi máy, mọi trình duyệt)
-// ===== Giới hạn quà =====
-var defaultGiftLimits = {
-  "BỘ LY<br>THỦY TINH": 32,
-  "NÓN<br>BẢO HIỂM": 8,
-  "ÁO MƯA": 3,
-  "Chúc Bạn<br>may mắn<br>Lần sau": 12
-};
-
-// 🔹 Nếu chưa có dữ liệu thì tạo mới, nếu có thì giữ nguyên
-var giftLimits = JSON.parse(localStorage.getItem("giftLimits") || JSON.stringify(defaultGiftLimits));
-
-
-// ✅ Khôi phục giới hạn quà đã lưu trước đó
-if (localStorage.getItem("giftLimits")) {
-  try {
-    var savedLimits = JSON.parse(localStorage.getItem("giftLimits"));
-    for (var key in savedLimits) {
-      if (giftLimits[key] !== undefined) giftLimits[key] = savedLimits[key];
-    }
-  } catch (e) { console.warn("Gift limit restore error", e); }
-}
-
-function getAvailablePrize(validIndices) {
-  var available = validIndices.filter(i => !(giftLimits[segments[i]] <= 0));
-  return available.length ? available[Math.floor(Math.random()*available.length)] : -1;
-}
-
 var arc = (2 * Math.PI) / segments.length;
 var spinAngle = 0, spinning = false;
 
@@ -318,6 +298,7 @@ function drawWheel() {
     ctx.arc(center, center, center, angle, angle + arc, false);
     ctx.fill();
 
+    // Text
     ctx.save();
     ctx.translate(center, center);
     ctx.rotate(angle + arc / 2);
@@ -327,12 +308,14 @@ function drawWheel() {
     ctx.textBaseline = "middle";
 
     var lines = segments[i].split("<br>");
-    var lineHeight = 18;
+    var lineHeight = 18;          
     var textRadius = center - 45;
+
     for (var j = 0; j < lines.length; j++) {
       var lineY = (j - (lines.length - 1) / 2) * lineHeight;
       ctx.fillText(lines[j].trim(), textRadius, lineY);
     }
+
     ctx.restore();
   }
 }
@@ -342,40 +325,16 @@ function spin() {
   if (spinning) return;
   spinning = true;
 
-  // 🎯 Cấu hình tỉ lệ phần quà
-  var giftPool = [
-    { name: "BỘ LY<br>THỦY TINH", count: giftLimits["BỘ LY<br>THỦY TINH"] ?? 32 },
-    { name: "NÓN<br>BẢO HIỂM", count: giftLimits["NÓN<br>BẢO HIỂM"] ?? 8 },
-    { name: "ÁO MƯA", count: giftLimits["ÁO MƯA"] ?? 5 },
-    { name: "Chúc Bạn<br>may mắn<br>Lần sau", count: 1 }
-  ];
+  // Chỉ cho trúng 4 ô đầu (200–500k)
+  var validIndices = [0,1,2,3];
+  var selectedIndex = validIndices[Math.floor(Math.random() * validIndices.length)];
 
-  // Tạo mảng pool theo số lượng thực tế
-  var pool = [];
-  giftPool.forEach(function(gift) {
-    for (var i = 0; i < gift.count; i++) pool.push(gift.name);
-  });
-
-  // Nếu tất cả đã hết thì mặc định “Không trúng”
-  if (pool.length === 0) {
-    window.pendingSegment = "Chúc Bạn may mắn Lần sau 🎉";
-    window.showSuccessAfterSpin();
-    spinning = false;
-    return;
-  }
-
-  // Random theo tỉ lệ thực tế
-  var selectedGift = pool[Math.floor(Math.random() * pool.length)];
-  var selectedIndex = segments.findIndex(s => s === selectedGift);
-  if (selectedIndex === -1) selectedIndex = 0;
-
-  // === Hiệu ứng quay ===
   var segmentDegree = 360 / segments.length;
   var segmentCenterDegree = selectedIndex * segmentDegree + segmentDegree / 2;
   var spins = Math.floor(Math.random() * 4 + 4);
   var finalDegree = spins * 360 + (360 + 270 - segmentCenterDegree) % 360;
   var finalRad = finalDegree * Math.PI / 180;
-  var duration = 4000;
+  var duration = 4000; 
   var start = null;
 
   function rotateWheel(timestamp) {
@@ -383,44 +342,47 @@ function spin() {
     var progress = timestamp - start;
     var easing = 1 - Math.pow(1 - progress / duration, 3);
     spinAngle = finalRad * easing;
-
     ctx.clearRect(0, 0, size, size);
-    ctx.save();
-    ctx.translate(center, center);
-    ctx.rotate(spinAngle);
+    ctx.save(); 
+    ctx.translate(center, center); 
+    ctx.rotate(spinAngle); 
     ctx.translate(-center, -center);
-    drawWheel();
+    drawWheel(); 
     ctx.restore();
 
-    if (progress < duration) {
-      requestAnimationFrame(rotateWheel);
+    if (progress < duration) { 
+      requestAnimationFrame(rotateWheel); 
     } else {
       window.pendingSegment = segments[selectedIndex];
 
-      // Trừ 1 phần quà nếu có trong giftLimits
-      if (giftLimits.hasOwnProperty(window.pendingSegment)) {
-        if (giftLimits[window.pendingSegment] > 0) {
-          giftLimits[window.pendingSegment]--;
-          localStorage.setItem("giftLimits", JSON.stringify(giftLimits));
-        }
+      // Lưu thưởng theo số điện thoại (chỉ trong 1 lần load, vì có clear)
+      var history = JSON.parse(localStorage.getItem("spinHistory") || "{}");
+      var phone = document.getElementById('registerForm').elements['phone'].value.trim();
+      if (!history[phone]) history[phone] = {};
+      if (!history[phone].firstPrize) {
+        history[phone].firstPrize = window.pendingSegment;
+      } else if (!history[phone].secondPrize) {
+        history[phone].secondPrize = window.pendingSegment;
       }
+      localStorage.setItem("spinHistory", JSON.stringify(history));
 
+      document.getElementById("result").innerText = "🎉 Bạn trúng: " + window.pendingSegment;
       spinning = false;
       window.showSuccessAfterSpin();
     }
   }
-
   requestAnimationFrame(rotateWheel);
 }
-</script>
-<script>
-// ==== POPUP ====
+
+// KHÔNG dùng localStorage để chặn popup nữa
 function showPopup() {
-  if (localStorage.getItem('popupDismissed') === 'true') return;
   document.querySelector('.popup-widget').style.display = 'flex';
+
   if (typeof confetti !== 'undefined') {
     confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
-    setTimeout(() => confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } }), 500);
+    setTimeout(function () {
+      confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+    }, 500);
   }
 }
 
@@ -433,21 +395,28 @@ window.addEventListener('load', function () {
   var wheelContainer = document.getElementById('wheelContainer');
   var spinBtn = document.getElementById('spinBtn');
 
-  // ✅ Luôn cho popup bật lần đầu
-  localStorage.setItem('popupDismissed', 'false');
+  // Vừa load trang là auto hiện popup (mỗi lần F5 đều hiện vì có clear)
   showPopup();
 
-  function hidePopup() { popup.style.display = 'none'; }
+  function hidePopup() { 
+    popup.style.display = 'none'; 
+  }
+
+  // Bấm X chỉ tắt popup, không ghi gì vào localStorage
   closeBtn.addEventListener('click', hidePopup);
+
+  // Bấm "Bữa khác nha!" cũng chỉ tắt popup, vẫn bật lại được bằng nút 🎁
   dismissLink.addEventListener('click', function () {
     hidePopup();
-    localStorage.setItem('popupDismissed', 'true');
   });
 
-  function isPhoneValid(phone) { return /^0\d{9}$/.test(phone); }
+  function isPhoneValid(phone) {
+    return /^0\d{9}$/.test(phone);
+  }
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
+
     var name = form.elements['name'].value.trim();
     var phone = form.elements['phone'].value.trim();
     var address = form.elements['address'].value.trim();
@@ -464,14 +433,15 @@ window.addEventListener('load', function () {
     window.pendingUserName = name;
     window.pendingCouponCode = couponCode;
 
+    // Lưu lịch sử quay (trong 1 lần load)
     var history = JSON.parse(localStorage.getItem("spinHistory") || "{}");
     history[phone] = { lastCoupon: couponCode };
     localStorage.setItem("spinHistory", JSON.stringify(history));
 
+    // Ẩn form, hiện vòng quay
     form.style.display = 'none';
     wheelContainer.style.display = 'block';
     document.getElementById('result').innerText = '';
-    localStorage.setItem('popupDismissed', 'true');
   });
 
   window.showSuccessAfterSpin = function () {
@@ -483,10 +453,12 @@ window.addEventListener('load', function () {
 
     var formData = new FormData();
     formData.append('entry.2068377047', window.pendingUserName);
+
     var phoneInput = document.querySelector('input[name="phone"]');
     var addressInput = document.querySelector('input[name="address"]');
-    var carInput = document.querySelector('input[name="car"]');
+    var carInput = document.querySelector('[name="car"]');
     var noteInput = document.querySelector('input[name="note"]');
+
     formData.append('entry.1431142738', phoneInput ? phoneInput.value.trim() : '');
     formData.append('entry.450626231', addressInput ? addressInput.value.trim() : '');
     formData.append('entry.188096586', carInput ? carInput.value.trim() : '');
@@ -495,7 +467,9 @@ window.addEventListener('load', function () {
     formData.append('entry.1042830072', (window.pendingSegment || '').replace(/<br\s*\/?>/gi, ' '));
 
     fetch("https://docs.google.com/forms/d/e/1FAIpQLScnHCm5eImjHVn6JQslb7eLWYE81YHPaVY1k9qJCreQesq5CQ/formResponse", {
-      method: "POST", body: formData, mode: "no-cors"
+      method: "POST", 
+      body: formData, 
+      mode: "no-cors"
     });
   };
 
@@ -529,4 +503,3 @@ window.addEventListener('load', function () {
     popup.addEventListener('cut', e => e.preventDefault());
   }
 </script>
-
