@@ -1,7 +1,11 @@
-<!-- Nút bật popup -->
-<div class="popup-toggle-btn" id="qcadsGiftBtn">🎁</div>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Popup Vòng Quay</title>
 
-<style>
+  <style>
   /* ===== NÚT 🎁 ===== */
   .popup-toggle-btn {
     position: fixed;
@@ -71,7 +75,6 @@
   .qcads-left{
     flex: 1 1 56%;
     min-width: 0;
-
     display: flex;
     flex-direction: column;
     min-height: 560px;
@@ -410,13 +413,6 @@
     100%{transform:translateY(0) scale(1); box-shadow:0 0 0 rgba(214,0,0,0)}
   }
 
-  /* Mobile: ẩn cột phải */
-  @media (max-width: 768px){
-    .popup-form{ max-width: 92%; padding: 16px; }
-    .qcads-popup-grid{ display:block; }
-    .qcads-right{ display:none; }
-  }
-
   /* ===== THÔNG BÁO CUSTOM (THAY alert) ===== */
   #qcadsAlert{
     position: fixed;
@@ -458,7 +454,40 @@
     font-weight: 800;
     cursor: pointer;
   }
-</style>
+
+  /* =====================================================
+     FIX CHẮC CHẮN: ẨN CỘT PHẢI TRÊN MOBILE (ĐẶT CUỐI CÙNG)
+     ===================================================== */
+  @media screen and (max-width: 768px){
+    #qcadsPopup .qcads-right,
+    #qcadsPopup .qcads-popup-grid > .qcads-right{
+      display: none !important;
+      width: 0 !important;
+      max-width: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: 0 !important;
+      overflow: hidden !important;
+    }
+    #qcadsPopup .qcads-popup-grid{
+      display: block !important;
+    }
+    #qcadsPopup .qcads-left{
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    #qcadsPopup .popup-form{
+      max-width: 92% !important;
+      padding: 16px !important;
+    }
+  }
+  </style>
+</head>
+
+<body>
+
+<!-- Nút bật popup -->
+<div class="popup-toggle-btn" id="qcadsGiftBtn">🎁</div>
 
 <!-- Popup chính -->
 <div class="popup-widget" id="qcadsPopup">
@@ -466,7 +495,6 @@
     <span class="close-btn" title="Đóng" tabindex="0">×</span>
 
     <div class="qcads-popup-grid">
-
       <!-- CỘT TRÁI -->
       <div class="qcads-left">
         <h2>🔥GIAO DIỆN NÂNG CẤP🔥<br>NÂNG TẦM TRẢI NGHỆM QUÝ KHÁCH HÀNG</h2>
@@ -533,7 +561,6 @@
             <li><span class="dot">🎁</span><span>Ngọc Anh Thương hiệu uy tính 30 năm</span></li>
           </ul>
 
-          <!-- LOGO (không khung) -->
           <div class="qcads-logo">
             <div class="logo-box">
               <img src="https://bydthanhcong.vn/wp-content/uploads/2025/12/NGOC-ANH-LOGO-01-2048x1600.png" alt="Xe Ngọc Anh Logo">
@@ -545,12 +572,12 @@
           </div>
         </div>
       </div>
-
     </div>
+
   </div>
 </div>
 
-<!-- THÔNG BÁO CUSTOM (thay alert) -->
+<!-- THÔNG BÁO CUSTOM -->
 <div id="qcadsAlert">
   <div class="qcads-alert-box">
     <h3>🎁 Thông báo</h3>
@@ -563,7 +590,6 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script type="text/javascript">
-/* ===== THÔNG BÁO CUSTOM ===== */
 function qcadsShowAlert(text){
   var box = document.getElementById('qcadsAlert');
   var t = document.getElementById('qcadsAlertText');
@@ -576,13 +602,11 @@ function qcadsCloseAlert(){
   if (!box) return;
   box.style.display = 'none';
 }
-
 (function(){
   var ok = document.getElementById('qcadsAlertOk');
   if (ok) ok.addEventListener('click', qcadsCloseAlert);
 })();
 
-/* ====== POPUP OPEN/CLOSE ====== */
 window.showPopup = function () {
   var popup = document.getElementById('qcadsPopup') || document.querySelector('.popup-widget');
   if (!popup) return;
@@ -595,14 +619,12 @@ window.showPopup = function () {
     }, 500);
   }
 };
-
 window.qcadsHidePopup = function () {
   var popup = document.getElementById('qcadsPopup') || document.querySelector('.popup-widget');
   if (!popup) return;
   popup.style.display = 'none';
 };
 
-/* ====== LOGIC VÒNG QUAY / KHO QUÀ ====== */
 var canvas = document.getElementById("wheel");
 var ctx = canvas.getContext("2d");
 var size = canvas.width;
@@ -622,7 +644,6 @@ var colors = [
  ["#ffde59","#c4a000"],
  ["#ff5ebc","#c7007a"]
 ];
-
 var arc = (2 * Math.PI) / segments.length;
 var spinAngle = 0, spinning = false;
 
@@ -634,17 +655,14 @@ function qcadsInitStockIfNeeded() {
   var stock = { "0": 27, "1": 3, "2": 1 };
   localStorage.setItem(PRIZE_STOCK_KEY, JSON.stringify(stock));
 }
-
 function qcadsGetStock() {
   qcadsInitStockIfNeeded();
   try { return JSON.parse(localStorage.getItem(PRIZE_STOCK_KEY) || "{}"); }
   catch (e) { return {}; }
 }
-
 function qcadsSaveStock(stock) {
   localStorage.setItem(PRIZE_STOCK_KEY, JSON.stringify(stock));
 }
-
 function qcadsPickPrizeIndexByStock(stock) {
   var total = 0;
   for (var k in stock) {
@@ -750,7 +768,6 @@ function spin() {
       if (!history[phone]) history[phone] = {};
       if (!history[phone].firstPrize) history[phone].firstPrize = window.pendingSegment;
       else if (!history[phone].secondPrize) history[phone].secondPrize = window.pendingSegment;
-
       localStorage.setItem("spinHistory", JSON.stringify(history));
 
       document.getElementById("result").innerText = "🎉 Bạn trúng: " + window.pendingSegment;
@@ -761,7 +778,6 @@ function spin() {
   requestAnimationFrame(rotateWheel);
 }
 
-/* ====== BOOT ====== */
 function qcadsBoot() {
   var closeBtn = document.querySelector('.popup-form .close-btn');
   var dismissLink = document.querySelector('.popup-form .dismiss-link');
@@ -795,9 +811,6 @@ function qcadsBoot() {
 
       var name = form.elements['name'].value.trim();
       var phone = form.elements['phone'].value.trim();
-      var address = form.elements['address'].value.trim();
-      var car = form.elements['car'].value.trim();
-      var note = form.elements['note'].value.trim();
 
       if (!isPhoneValid(phone)) {
         qcadsShowAlert('Số điện thoại không hợp lệ (phải có 10 số và bắt đầu bằng 0).');
@@ -827,32 +840,10 @@ function qcadsBoot() {
     document.getElementById('showName').innerText = window.pendingUserName || '';
     document.getElementById('couponCode').innerText = window.pendingCouponCode || '';
     document.getElementById('wonValue').innerHTML = (window.pendingSegment || '').replace(/<br\s*\/?>/gi, ' ');
-
-    var formData = new FormData();
-    formData.append('entry.2068377047', window.pendingUserName);
-
-    var phoneInput = document.querySelector('input[name="phone"]');
-    var addressInput = document.querySelector('input[name="address"]');
-    var carInput = document.querySelector('[name="car"]');
-    var noteInput = document.querySelector('input[name="note"]');
-
-    formData.append('entry.1431142738', phoneInput ? phoneInput.value.trim() : '');
-    formData.append('entry.450626231', addressInput ? addressInput.value.trim() : '');
-    formData.append('entry.188096586', carInput ? carInput.value.trim() : '');
-    formData.append('entry.350180116', noteInput ? noteInput.value.trim() : '');
-    formData.append('entry.147650368', window.pendingCouponCode);
-    formData.append('entry.1042830072', (window.pendingSegment || '').replace(/<br\s*\/?>/gi, ' '));
-
-    fetch("https://docs.google.com/forms/d/e/1FAIpQLScnHCm5eImjHVn6JQslb7eLWYE81YHPaVY1k9qJCreQesq5CQ/formResponse", {
-      method: "POST",
-      body: formData,
-      mode: "no-cors"
-    });
   };
 
   if (spinBtn) spinBtn.addEventListener('click', spin);
 
-  /* AUTO HIỆN POPUP */
   window.showPopup();
 }
 
@@ -863,35 +854,34 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 }
 </script>
 
-<!-- Script chống copy trong popup (ES5-safe) -->
 <script type="text/javascript">
-  function qcadsHasPopupWidget(el) {
-    while (el && el !== document) {
-      if (el.className && typeof el.className === 'string' && el.className.indexOf('popup-widget') !== -1) return true;
-      el = el.parentNode;
-    }
-    return false;
+function qcadsHasPopupWidget(el) {
+  while (el && el !== document) {
+    if (el.className && typeof el.className === 'string' && el.className.indexOf('popup-widget') !== -1) return true;
+    el = el.parentNode;
   }
+  return false;
+}
+var qcadsPopup = document.querySelector('.popup-widget');
 
-  var qcadsPopup = document.querySelector('.popup-widget');
+document.addEventListener('contextmenu', function (e) {
+  if (qcadsHasPopupWidget(e.target)) e.preventDefault();
+});
+document.addEventListener('keydown', function (e) {
+  if (!qcadsHasPopupWidget(e.target)) return;
 
-  document.addEventListener('contextmenu', function (e) {
-    if (qcadsHasPopupWidget(e.target)) e.preventDefault();
-  });
+  var key = (e.key || '').toLowerCase();
+  var isCtrl = !!e.ctrlKey;
+  var forbidden = { u:1, s:1, c:1, x:1, i:1 };
 
-  document.addEventListener('keydown', function (e) {
-    if (!qcadsHasPopupWidget(e.target)) return;
-
-    var key = (e.key || '').toLowerCase();
-    var isCtrl = !!e.ctrlKey;
-    var forbidden = { u:1, s:1, c:1, x:1, i:1 };
-
-    if ((isCtrl && forbidden[key]) || e.key === 'F12') e.preventDefault();
-  });
-
-  if (qcadsPopup) {
-    qcadsPopup.style.userSelect = 'none';
-    qcadsPopup.addEventListener('copy', function (e) { e.preventDefault(); });
-    qcadsPopup.addEventListener('cut', function (e) { e.preventDefault(); });
-  }
+  if ((isCtrl && forbidden[key]) || e.key === 'F12') e.preventDefault();
+});
+if (qcadsPopup) {
+  qcadsPopup.style.userSelect = 'none';
+  qcadsPopup.addEventListener('copy', function (e) { e.preventDefault(); });
+  qcadsPopup.addEventListener('cut', function (e) { e.preventDefault(); });
+}
 </script>
+
+</body>
+</html>
