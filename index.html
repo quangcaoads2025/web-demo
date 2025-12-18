@@ -1,7 +1,8 @@
-<!-- Nút bật popup -->  
-<div class="popup-toggle-btn" onclick="showPopup()">🎁</div>
+<!-- Nút bật popup -->
+<div class="popup-toggle-btn" id="qcadsGiftBtn">🎁</div>
 
 <style>
+  /* ===== NÚT 🎁 ===== */
   .popup-toggle-btn {
     position: fixed;
     bottom: 10%;
@@ -12,54 +13,95 @@
     padding: 10px 14px;
     border-radius: 0 10px 10px 0;
     cursor: pointer;
-    z-index: 10000;
+    z-index: 100000;
     box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+    pointer-events: auto;
   }
 
+  /* ===== LỚP NỀN POPUP ===== */
   .popup-widget * { box-sizing: border-box; }
   .popup-widget {
     position: fixed;
-    top: 0; left: 0;
+    inset: 0;
     width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.3);
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
-    font-family: 'Arial', sans-serif;
+    z-index: 99999;
+    font-family: Arial, sans-serif;
+    pointer-events: auto;
   }
+
+  /* ===== HỘP POPUP CHÍNH ===== */
   .popup-form {
     background: #ffffff;
     padding: 24px;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    max-width: 500px;
+    max-width: 920px;
     width: 100%;
     position: relative;
     overflow: hidden;
+    pointer-events: auto;
   }
-  .popup-form::before {
-    content: "";
-    background: url('https://www.ngocanhcm.vn/data/category/thongtinweb.png') no-repeat center center;
-    background-size: 110%;
-    opacity: 0.15;
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+
+  /* ẢNH NỀN CHÌM CHỈ BÊN TRÁI */
+  .popup-form::before{ content:none !important; }
+
+  .qcads-left{ position: relative; }
+  .qcads-left::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background: url('https://www.ngocanhcm.vn/data/category/thongtinweb.png') no-repeat left center;
+    background-size: 115%;
+    opacity: 0.12;
     z-index: 0;
+    pointer-events: none;
   }
-  .popup-form > * { position: relative; z-index: 1; }
+  .qcads-left > *{ position: relative; z-index: 1; }
+
+  /* ===== LAYOUT 2 CỘT ===== */
+  .qcads-popup-grid{
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+  }
+  .qcads-left{
+    flex: 1 1 56%;
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    min-height: 560px;
+  }
+  .qcads-right{
+    flex: 1 1 44%;
+    min-width: 0;
+    border-left: 1px solid rgba(0,0,0,0.08);
+    padding-left: 18px;
+  }
+
+  /* ===== TIÊU ĐỀ + MÔ TẢ ===== */
   .popup-form h2, .popup-form p {
     text-align: center;
     font-weight: 700;
   }
-  .popup-form h2 { font-size: 18px; color: #222; margin-bottom: 8px; }
-  .popup-form p { font-size: 14px; color: #d62828; margin-bottom: 16px; }
+  .popup-form h2 { font-size: 18px; color: #222; margin: 0 0 8px; }
+  .popup-form p { font-size: 14px; color: #d62828; margin: 0 0 16px; }
+
+  /* ===== INPUT ===== */
   .popup-form input[type="text"], .popup-form input[type="email"] {
-    width: 100%; padding: 10px; margin: 8px 0;
-    border: 1px solid #ccc; border-radius: 8px;
-    background: transparent; color: #000;
-    font-size: 15px; font-weight: 500;
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: transparent;
+    color: #000;
+    font-size: 15px;
+    font-weight: 500;
   }
   .popup-form input::placeholder { color: #111; opacity: 1; }
   .popup-form input[type="checkbox"] { margin-right: 6px; }
@@ -69,33 +111,60 @@
     align-items: center;
     margin-top: 6px;
   }
+
+  /* ===== NÚT SUBMIT ===== */
   .popup-form button {
-    background: red; color: white;
-    padding: 12px 16px; border: none;
-    border-radius: 8px; font-weight: bold;
-    cursor: pointer; margin-top: 10px;
+    background: red;
+    color: white;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
   }
-  .popup-form a.dismiss-link {
-    margin-left: 12px; color: blue;
+
+  /* Hàng nút: trái – phải */
+  .popup-form .form-actions{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .popup-form .form-actions #submitBtn{ margin-top: 0; }
+  .popup-form .form-actions .dismiss-link{
+    margin-left: 0;
+    color: blue;
     text-decoration: underline;
-    cursor: pointer; font-size: 14px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
   }
+
+  /* ===== NÚT ĐÓNG ===== */
   .close-btn {
     position: absolute;
     top: 12px; right: 16px;
-    cursor: pointer; font-size: 22px;
-    color: #666; z-index: 2;
+    cursor: pointer;
+    font-size: 22px;
+    color: #666;
+    z-index: 10;
+    pointer-events: auto;
   }
+
+  /* ===== SUCCESS ===== */
   #successMessage {
     display: none;
     text-align: left;
     margin-top: 20px;
     line-height: 1.5;
-    font-size: 14px;
+    font-size: 16px;
   }
   #successMessage h3 {
     color: green;
-    font-size: 16px;
+    font-size: 20px;
     font-weight: bold;
     margin-bottom: 10px;
     text-align: center;
@@ -107,31 +176,32 @@
     font-size: 18px;
     font-weight: bold;
   }
-  @media (max-width: 480px) {
-    .popup-form { max-width: 90%; padding: 16px; }
-  }
+
+  /* ===== FOOTER ===== */
   .site-footer {
     text-align: center;
     font-size: 12px;
     color: #777;
     padding: 10px 8px;
     border-top: 1px solid #ddd;
-    margin-top: 18px;
+    margin-top: auto;
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(2px);
   }
   .site-footer strong { color: #111; }
-  /* ==== Hiển thị giải thưởng đẹp trong popup ==== */
-.gift-text {
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  color: red;
-  line-height: 1.4;
-  margin: 6px 0 10px 0;
-}
 
-/* ==== STYLE VÒNG QUAY CAO CẤP ==== */
+  /* ===== GIFT TEXT ===== */
+  .gift-text {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: red;
+    line-height: 1.4;
+    margin: 6px 0 10px 0;
+  }
+
+  /* ===== VÒNG QUAY ===== */
   #wheelContainer { display: none; margin-top: 10px; text-align: center; }
-
   #wheel {
     border-radius: 50%;
     display: block;
@@ -140,15 +210,12 @@
     box-shadow: 0 0 25px rgba(255,255,255,0.4), inset 0 0 35px rgba(255,255,255,0.2);
     transition: transform 5s cubic-bezier(.23,1,.32,1);
   }
-
   .wheel-container {
     position: relative;
     width: 300px;
     height: 300px;
     margin: 0 auto;
   }
-
-  /* Mũi tên */
   .arrow {
     position: absolute;
     top: -20px; left: 50%;
@@ -160,8 +227,6 @@
     filter: drop-shadow(0 0 6px #fff);
     z-index: 15;
   }
-
-  /* Nút QUAY */
   .center-button {
     position: absolute;
     top: 50%; left: 50%;
@@ -191,7 +256,6 @@
     border-bottom: 15px solid #fff;
     filter: drop-shadow(0 0 4px #fff);
   }
-
   #result {
     margin-top: 12px;
     font-size: 18px;
@@ -199,56 +263,299 @@
     color: #2c3e50;
     min-height: 28px;
   }
+
+  /* ===== CỘT PHẢI ===== */
+  .qcads-right-card{
+    background: rgba(255,255,255,0.75);
+    border-radius: 12px;
+    padding: 14px 14px 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  }
+  .qcads-hotline{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom: 10px;
+  }
+  .qcads-hotline .qcads-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding: 10px 12px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.07);
+    font-weight: 800;
+  }
+  .qcads-hotline .qcads-pill .qcads-icon{
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: #1b5cff;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 16px;
+  }
+  .qcads-hotline .qcads-pill .qcads-text{
+    line-height: 1.1;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 800;
+    color:#1a1a1a;
+  }
+  .qcads-hotline .qcads-pill .qcads-text b{
+    display:block;
+    font-size: 16px;
+    letter-spacing: .3px;
+    color:#0a2a7a;
+  }
+  .qcads-right ul{
+    list-style: none;
+    margin: 10px 0 14px;
+    padding: 0;
+  }
+  .qcads-right li{
+    margin: 8px 0;
+    font-size: 15px;
+    font-weight: 700;
+    color:#222;
+    display:flex;
+    gap:8px;
+    align-items:flex-start;
+  }
+  .qcads-right li .dot{
+    width: 18px;
+    flex: 0 0 18px;
+    line-height: 1.2;
+  }
+
+  .qcads-logo{ display:block; padding: 14px 0 8px; }
+  .qcads-logo .logo-box{
+    width: 100%;
+    height: 180px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+  .qcads-logo .logo-box img{
+    display:block;
+    max-width:100%;
+    max-height:100%;
+    width:auto;
+    height:auto;
+    object-fit:contain;
+  }
+
+  .qcads-right-hot{
+    position: relative;
+    margin-top: 14px;
+    padding: 14px 12px;
+    border-radius: 14px;
+    text-align: center;
+    font-weight: 900;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #d60000;
+    background: linear-gradient(135deg,#fff5f5,#ffffff,#fff5f5);
+    border: 1px dashed rgba(214,0,0,.55);
+    box-shadow: 0 8px 22px rgba(214,0,0,.18), inset 0 0 0 1px rgba(214,0,0,.15);
+    overflow: hidden;
+  }
+  .qcads-right-hot::before{
+    content: "🔥HOT🔥";
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    animation: qcadsHotBlink 1.4s infinite;
+  }
+  .qcads-right-hot::after{
+    content:"";
+    position:absolute;
+    top:0;
+    left:-70%;
+    width:60%;
+    height:100%;
+    background: linear-gradient(120deg,transparent,rgba(255,255,255,0.75),transparent);
+    animation: qcadsHotShine 3s infinite;
+  }
+  @keyframes qcadsHotBlink{ 0%,100%{opacity:1} 50%{opacity:.55} }
+  @keyframes qcadsHotShine{ 0%{left:-70%} 100%{left:120%} }
+
+  /* HIỆU ỨNG QUÀ 🎁 */
+  .qcads-right li .dot{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width: 22px;
+    height: 22px;
+    border-radius: 8px;
+    background: rgba(214,0,0,0.08);
+    box-shadow: 0 0 0 rgba(214,0,0,0);
+    animation: qcadsGiftPulse 1.2s infinite;
+  }
+  .qcads-right li:nth-child(2) .dot{ animation-delay: .15s; }
+  .qcads-right li:nth-child(3) .dot{ animation-delay: .30s; }
+  .qcads-right li:nth-child(4) .dot{ animation-delay: .45s; }
+  .qcads-right li:nth-child(5) .dot{ animation-delay: .60s; }
+  @keyframes qcadsGiftPulse{
+    0%{transform:translateY(0) scale(1); box-shadow:0 0 0 rgba(214,0,0,0)}
+    40%{transform:translateY(-1px) scale(1.08); box-shadow:0 10px 18px rgba(214,0,0,.15)}
+    70%{transform:translateY(0) scale(1.02)}
+    100%{transform:translateY(0) scale(1); box-shadow:0 0 0 rgba(214,0,0,0)}
+  }
+
+  /* Mobile: ẩn cột phải */
+  @media (max-width: 768px){
+    .popup-form{ max-width: 92%; padding: 16px; }
+    .qcads-popup-grid{ display:block; }
+    .qcads-right{ display:none; }
+  }
+
+  /* ===== THÔNG BÁO CUSTOM (THAY alert) ===== */
+  #qcadsAlert{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200000;
+  }
+  .qcads-alert-box{
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px 16px 14px;
+    max-width: 420px;
+    width: 92%;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,.25);
+  }
+  .qcads-alert-box h3{
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 900;
+    color: #d60000;
+  }
+  .qcads-alert-box p{
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #222;
+  }
+  .qcads-alert-box button{
+    margin-top: 12px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    background: #d60000;
+    color: #fff;
+    font-weight: 800;
+    cursor: pointer;
+  }
 </style>
 
 <!-- Popup chính -->
-<div class="popup-widget" style="display: none;">
+<div class="popup-widget" id="qcadsPopup">
   <div class="popup-form">
     <span class="close-btn" title="Đóng" tabindex="0">×</span>
-    <h2>🔥HONDA SPORTY ZONE 2025🔥</h2>
-    <p>XE NGỌC ANH – UY TÍN - CHẤT LƯỢNG - GIÁ TỐT</p>
 
-    <form id="registerForm">
-      <input type="text" name="name" placeholder="Tên của Anh/Chị:*" required />
-      <input type="text" name="phone" placeholder="Số điện thoại:*" required />
-      <input type="text" name="address" placeholder="Địa chỉ liên hệ:*" required />
-      <select name="car" required style="width:100%; padding:10px; margin:8px 0; border:1px solid #ccc; border-radius:8px; font-size:15px;">
-        <option value="">Chọn dòng xe lái thử *</option>
-        <option>WINNER R 2026</option>
-        <option>Vario 125</option>
-        <option>Air Blade</option>
-        <option>Wave RSX</option>
-      </select>
-      <input type="text" name="note" placeholder="Yêu cầu khác (nếu có):" />
-      <label><input type="checkbox" required /> Tôi đồng ý với điều khoản của Xe Ngọc Anh</label>
-      <button type="submit" id="submitBtn">ĐĂNG KÝ NGAY</button>
-      <a class="dismiss-link" tabindex="0">Bữa khác nha!</a>
-    </form>
+    <div class="qcads-popup-grid">
 
-    <!-- Vòng quay -->
-    <div id="wheelContainer">
-      <div class="wheel-container">
-        <div class="arrow"></div>
-        <canvas id="wheel" width="300" height="300"></canvas>
-        <div class="center-button" id="spinBtn" tabindex="0"> 
-          <div class="pointer"></div>
-          <span>Quay</span>
+      <!-- CỘT TRÁI -->
+      <div class="qcads-left">
+        <h2>🔥GIAO DIỆN NÂNG CẤP🔥<br>NÂNG TẦM TRẢI NGHỆM QUÝ KHÁCH HÀNG</h2>
+        <p>XE NGỌC ANH – UY TÍN - CHẤT LƯỢNG - GIÁ TỐT</p>
+
+        <form id="registerForm">
+          <input type="text" name="name" placeholder="Tên của Anh/Chị:*" required />
+          <input type="text" name="phone" placeholder="Số điện thoại:*" required />
+          <input type="text" name="address" placeholder="Địa chỉ liên hệ:*" required />
+          <input type="text" name="car" placeholder="Dòng xe quan tâm:*" required />
+          <input type="text" name="note" placeholder="Yêu cầu khác (nếu có):" />
+          <label><input type="checkbox" required /> Tôi đồng ý với điều khoản của Xe Ngọc Anh</label>
+
+          <div class="form-actions">
+            <button type="submit" id="submitBtn">ĐĂNG KÝ NGAY</button>
+            <a class="dismiss-link" tabindex="0">Bữa khác nha!</a>
+          </div>
+        </form>
+
+        <!-- Vòng quay -->
+        <div id="wheelContainer">
+          <div class="wheel-container">
+            <div class="arrow"></div>
+            <canvas id="wheel" width="300" height="300"></canvas>
+            <div class="center-button" id="spinBtn" tabindex="0">
+              <div class="pointer"></div>
+              <span>Quay</span>
+            </div>
+          </div>
+          <div id="result"></div>
+        </div>
+
+        <div id="successMessage">
+          <h3>🎉CẢM ƠN Anh/Chị <span id="showName"></span><br>ĐÃ THAM GIA CHƯƠNG TRÌNH😘</h3>
+          <p>MÃ QUÀ TẶNG LÀ: <span id="couponCode"></span></p>
+          <div id="wonValue" class="gift-text"></div>
+          <p>VUI LÒNG CHỤP MÀN HÌNH HOẶC ĐỌC TÊN KHI NHẬN QUÀ TẶNG.</p>
+          <p>🔔 “Voucher giảm giá không quy đổi thành tiền mặt và chỉ áp dụng 01 mã khi mua xe. Mã giảm giá được QuangCaoAds lưu để đối chiếu khi thanh toán.”</p>
+        </div>
+
+        <div class="site-footer">
+          © 2025 Bản quyền thuộc về <strong>QuangCaoAds</strong> | Thiết kế bởi<br><strong>MKT HLAds - Xe Ngọc Anh Cà Mau</strong>
         </div>
       </div>
-      <div id="result"></div>
-    </div>
 
-    <div id="successMessage">
-      <h3>🎉CẢM ƠN ANH/CHỊ <span id="showName"></span> ĐÃ THAM GIA!</h3>
-      <p>MÃ QUÀ TẶNG LÀ: <span id="couponCode"></span></p>
-<div id="wonValue" class="gift-text"></div>
-      <p>VUI LÒNG CHỤP MÀN HÌNH HOẶC ĐỌC TÊN KHI NHẬN QUÀ TẶNG.</p>
-      <p>🔔 “Voucher giảm giá không quy đổi thành tiền mặt và chỉ áp dụng 01 mã khi mua xe. Mã giảm giá được QuangCaoAds lưu để đối chiếu khi thanh toán.”</p>
-    </div>
+      <!-- CỘT PHẢI -->
+      <div class="qcads-right">
+        <div class="qcads-right-card">
+          <div class="qcads-hotline">
+            <div class="qcads-pill">
+              <div class="qcads-icon">☎</div>
+              <div class="qcads-text">
+                HOTLINE
+                <b>08888 58 200</b>
+              </div>
+            </div>
+          </div>
 
-    <div class="site-footer">
-      © 2025 Bản quyền thuộc về <strong>QuangCaoAds</strong> | Thiết kế bởi <strong>MKT HLAds – Xe Ngọc Anh Cà Mau</strong>
+          <ul>
+            <li><span class="dot">🚀</span><span>XE NGỌC ANH – CHÍNH HÃNG, GIÁ TỐT</span></li>
+            <li><span class="dot">🎁</span><span>Mua xe chuẩn – Giá tốt</span></li>
+            <li><span class="dot">🎁</span><span>Giao tận nhà toàn tỉnh</span></li>
+            <li><span class="dot">🎁</span><span>Quà tặng hấp dẫn – Trả góp duyệt nhanh</span></li>
+            <li><span class="dot">🎁</span><span>Ngọc Anh Thương hiệu uy tính 30 năm</span></li>
+          </ul>
+
+          <!-- LOGO (không khung) -->
+          <div class="qcads-logo">
+            <div class="logo-box">
+              <img src="https://bydthanhcong.vn/wp-content/uploads/2025/12/NGOC-ANH-LOGO-01-2048x1600.png" alt="Xe Ngọc Anh Logo">
+            </div>
+          </div>
+
+          <div class="qcads-right-hot">
+            Hãy để lại thông tin, nhận ngay chương trình khuyến mãi!
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
+</div>
+
+<!-- THÔNG BÁO CUSTOM (thay alert) -->
+<div id="qcadsAlert">
+  <div class="qcads-alert-box">
+    <h3>🎁 Thông báo</h3>
+    <p id="qcadsAlertText"></p>
+    <button type="button" id="qcadsAlertOk">Đã hiểu</button>
   </div>
 </div>
 
@@ -256,34 +563,109 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script type="text/javascript">
-// Luôn reset localStorage mỗi lần load trang (theo yêu cầu của anh)
-localStorage.clear();
+/* ===== THÔNG BÁO CUSTOM ===== */
+function qcadsShowAlert(text){
+  var box = document.getElementById('qcadsAlert');
+  var t = document.getElementById('qcadsAlertText');
+  if (!box || !t) return;
+  t.innerText = text || '';
+  box.style.display = 'flex';
+}
+function qcadsCloseAlert(){
+  var box = document.getElementById('qcadsAlert');
+  if (!box) return;
+  box.style.display = 'none';
+}
 
+(function(){
+  var ok = document.getElementById('qcadsAlertOk');
+  if (ok) ok.addEventListener('click', qcadsCloseAlert);
+})();
+
+/* ====== POPUP OPEN/CLOSE ====== */
+window.showPopup = function () {
+  var popup = document.getElementById('qcadsPopup') || document.querySelector('.popup-widget');
+  if (!popup) return;
+  popup.style.display = 'flex';
+
+  if (typeof confetti !== 'undefined') {
+    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+    setTimeout(function () {
+      confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+    }, 500);
+  }
+};
+
+window.qcadsHidePopup = function () {
+  var popup = document.getElementById('qcadsPopup') || document.querySelector('.popup-widget');
+  if (!popup) return;
+  popup.style.display = 'none';
+};
+
+/* ====== LOGIC VÒNG QUAY / KHO QUÀ ====== */
 var canvas = document.getElementById("wheel");
 var ctx = canvas.getContext("2d");
 var size = canvas.width;
 var center = size / 2;
 
 var segments = [
-  "VOUCHER<br>200.000Đ",
-  "VOUCHER<br>300.000Đ",
-  "VOUCHER<br>400.000Đ",
-  "VOUCHER<br>500.000Đ",
-  "VOUCHER<br>1.000.000Đ",
-  "Voucher<br>1.500.000Đ",
-  "Voucher<br>2.000.000Đ"
+  "BỘ 06 LY<br>THỦY TINH<br>CAO CẤP",
+  "VALI<br>CAO CẤP<br>YAMAHA",
+  "TAI NGHE<br>AIRPOOD 4",
+  "VOUCHER<br>3.000.000Đ",
+  "VOUCHER<br>5.000.000Đ"
 ];
 var colors = [
  ["#0099ff","#0059b3"],
  ["#00c2ff","#007ca3"],
  ["#00ffcc","#00b386"],
  ["#ffde59","#c4a000"],
- ["#ff5ebc","#c7007a"],
- ["#a18cd1","#6e5aa4"],
- ["#ff8c42","#ff5f00"]
+ ["#ff5ebc","#c7007a"]
 ];
+
 var arc = (2 * Math.PI) / segments.length;
 var spinAngle = 0, spinning = false;
+
+var PRIZE_STOCK_KEY = "qcads_prize_stock_v1";
+
+function qcadsInitStockIfNeeded() {
+  var raw = localStorage.getItem(PRIZE_STOCK_KEY);
+  if (raw) return;
+  var stock = { "0": 27, "1": 3, "2": 1 };
+  localStorage.setItem(PRIZE_STOCK_KEY, JSON.stringify(stock));
+}
+
+function qcadsGetStock() {
+  qcadsInitStockIfNeeded();
+  try { return JSON.parse(localStorage.getItem(PRIZE_STOCK_KEY) || "{}"); }
+  catch (e) { return {}; }
+}
+
+function qcadsSaveStock(stock) {
+  localStorage.setItem(PRIZE_STOCK_KEY, JSON.stringify(stock));
+}
+
+function qcadsPickPrizeIndexByStock(stock) {
+  var total = 0;
+  for (var k in stock) {
+    if (!stock.hasOwnProperty(k)) continue;
+    var n = parseInt(stock[k], 10) || 0;
+    if (n > 0) total += n;
+  }
+  if (total <= 0) return null;
+
+  var r = Math.floor(Math.random() * total);
+  var acc = 0;
+
+  for (var kk in stock) {
+    if (!stock.hasOwnProperty(kk)) continue;
+    var nn = parseInt(stock[kk], 10) || 0;
+    if (nn <= 0) continue;
+    acc += nn;
+    if (r < acc) return parseInt(kk, 10);
+  }
+  return null;
+}
 
 function drawWheel() {
   for (var i = 0; i < segments.length; i++) {
@@ -298,7 +680,6 @@ function drawWheel() {
     ctx.arc(center, center, center, angle, angle + arc, false);
     ctx.fill();
 
-    // Text
     ctx.save();
     ctx.translate(center, center);
     ctx.rotate(angle + arc / 2);
@@ -308,14 +689,13 @@ function drawWheel() {
     ctx.textBaseline = "middle";
 
     var lines = segments[i].split("<br>");
-    var lineHeight = 18;          
+    var lineHeight = 18;
     var textRadius = center - 45;
 
     for (var j = 0; j < lines.length; j++) {
       var lineY = (j - (lines.length - 1) / 2) * lineHeight;
       ctx.fillText(lines[j].trim(), textRadius, lineY);
     }
-
     ctx.restore();
   }
 }
@@ -325,16 +705,25 @@ function spin() {
   if (spinning) return;
   spinning = true;
 
-  // Chỉ cho trúng 4 ô đầu (200–500k)
-  var validIndices = [0,1,2,3];
-  var selectedIndex = validIndices[Math.floor(Math.random() * validIndices.length)];
+  var stock = qcadsGetStock();
+  var selectedIndex = qcadsPickPrizeIndexByStock(stock);
+
+  if (selectedIndex === null) {
+    spinning = false;
+    qcadsShowAlert("Chương trình đã hết quà tặng dành cho quý khách hàng. Cảm ơn anh/chị đã mua hàng và sử dụng dịch vụ.");
+    return;
+  }
+
+  stock[String(selectedIndex)] = (parseInt(stock[String(selectedIndex)], 10) || 0) - 1;
+  if (stock[String(selectedIndex)] < 0) stock[String(selectedIndex)] = 0;
+  qcadsSaveStock(stock);
 
   var segmentDegree = 360 / segments.length;
   var segmentCenterDegree = selectedIndex * segmentDegree + segmentDegree / 2;
   var spins = Math.floor(Math.random() * 4 + 4);
   var finalDegree = spins * 360 + (360 + 270 - segmentCenterDegree) % 360;
   var finalRad = finalDegree * Math.PI / 180;
-  var duration = 4000; 
+  var duration = 4000;
   var start = null;
 
   function rotateWheel(timestamp) {
@@ -342,28 +731,26 @@ function spin() {
     var progress = timestamp - start;
     var easing = 1 - Math.pow(1 - progress / duration, 3);
     spinAngle = finalRad * easing;
+
     ctx.clearRect(0, 0, size, size);
-    ctx.save(); 
-    ctx.translate(center, center); 
-    ctx.rotate(spinAngle); 
+    ctx.save();
+    ctx.translate(center, center);
+    ctx.rotate(spinAngle);
     ctx.translate(-center, -center);
-    drawWheel(); 
+    drawWheel();
     ctx.restore();
 
-    if (progress < duration) { 
-      requestAnimationFrame(rotateWheel); 
+    if (progress < duration) {
+      requestAnimationFrame(rotateWheel);
     } else {
       window.pendingSegment = segments[selectedIndex];
 
-      // Lưu thưởng theo số điện thoại (chỉ trong 1 lần load, vì có clear)
       var history = JSON.parse(localStorage.getItem("spinHistory") || "{}");
       var phone = document.getElementById('registerForm').elements['phone'].value.trim();
       if (!history[phone]) history[phone] = {};
-      if (!history[phone].firstPrize) {
-        history[phone].firstPrize = window.pendingSegment;
-      } else if (!history[phone].secondPrize) {
-        history[phone].secondPrize = window.pendingSegment;
-      }
+      if (!history[phone].firstPrize) history[phone].firstPrize = window.pendingSegment;
+      else if (!history[phone].secondPrize) history[phone].secondPrize = window.pendingSegment;
+
       localStorage.setItem("spinHistory", JSON.stringify(history));
 
       document.getElementById("result").innerText = "🎉 Bạn trúng: " + window.pendingSegment;
@@ -374,79 +761,69 @@ function spin() {
   requestAnimationFrame(rotateWheel);
 }
 
-// KHÔNG dùng localStorage để chặn popup nữa
-function showPopup() {
-  document.querySelector('.popup-widget').style.display = 'flex';
-
-  if (typeof confetti !== 'undefined') {
-    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
-    setTimeout(function () {
-      confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
-    }, 500);
-  }
-}
-
-window.addEventListener('load', function () {
-  var popup = document.querySelector('.popup-widget');
+/* ====== BOOT ====== */
+function qcadsBoot() {
   var closeBtn = document.querySelector('.popup-form .close-btn');
   var dismissLink = document.querySelector('.popup-form .dismiss-link');
   var form = document.getElementById('registerForm');
-  var successMessage = document.getElementById('successMessage');
   var wheelContainer = document.getElementById('wheelContainer');
   var spinBtn = document.getElementById('spinBtn');
+  var giftBtn = document.getElementById('qcadsGiftBtn');
 
-  // Vừa load trang là auto hiện popup (mỗi lần F5 đều hiện vì có clear)
-  showPopup();
+  qcadsInitStockIfNeeded();
 
-  function hidePopup() { 
-    popup.style.display = 'none'; 
+  if (giftBtn) {
+    giftBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      window.showPopup();
+    }, true);
   }
 
-  // Bấm X chỉ tắt popup, không ghi gì vào localStorage
-  closeBtn.addEventListener('click', hidePopup);
-
-  // Bấm "Bữa khác nha!" cũng chỉ tắt popup, vẫn bật lại được bằng nút 🎁
-  dismissLink.addEventListener('click', function () {
+  function hidePopup(){ window.qcadsHidePopup(); }
+  if (closeBtn) closeBtn.addEventListener('click', hidePopup);
+  if (dismissLink) dismissLink.addEventListener('click', function (e) {
+    e.preventDefault();
     hidePopup();
   });
 
-  function isPhoneValid(phone) {
-    return /^0\d{9}$/.test(phone);
+  function isPhoneValid(phone){ return /^0\d{9}$/.test(phone); }
+
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      var name = form.elements['name'].value.trim();
+      var phone = form.elements['phone'].value.trim();
+      var address = form.elements['address'].value.trim();
+      var car = form.elements['car'].value.trim();
+      var note = form.elements['note'].value.trim();
+
+      if (!isPhoneValid(phone)) {
+        qcadsShowAlert('Số điện thoại không hợp lệ (phải có 10 số và bắt đầu bằng 0).');
+        form.elements['phone'].focus();
+        return;
+      }
+
+      var couponCode = 'NA' + Math.floor(100000 + Math.random() * 900000);
+      window.pendingUserName = name;
+      window.pendingCouponCode = couponCode;
+
+      var history = JSON.parse(localStorage.getItem("spinHistory") || "{}");
+      history[phone] = { lastCoupon: couponCode };
+      localStorage.setItem("spinHistory", JSON.stringify(history));
+
+      form.style.display = 'none';
+      wheelContainer.style.display = 'block';
+      document.getElementById('result').innerText = '';
+    });
   }
 
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    var name = form.elements['name'].value.trim();
-    var phone = form.elements['phone'].value.trim();
-    var address = form.elements['address'].value.trim();
-    var car = form.elements['car'].value.trim();
-    var note = form.elements['note'].value.trim();
-
-    if (!isPhoneValid(phone)) {
-      alert('Số điện thoại không hợp lệ (phải có 10 số và bắt đầu bằng 0).');
-      form.elements['phone'].focus();
-      return;
-    }
-
-    var couponCode = 'NA' + Math.floor(100000 + Math.random() * 900000);
-    window.pendingUserName = name;
-    window.pendingCouponCode = couponCode;
-
-    // Lưu lịch sử quay (trong 1 lần load)
-    var history = JSON.parse(localStorage.getItem("spinHistory") || "{}");
-    history[phone] = { lastCoupon: couponCode };
-    localStorage.setItem("spinHistory", JSON.stringify(history));
-
-    // Ẩn form, hiện vòng quay
-    form.style.display = 'none';
-    wheelContainer.style.display = 'block';
-    document.getElementById('result').innerText = '';
-  });
-
   window.showSuccessAfterSpin = function () {
+    var successMessage = document.getElementById('successMessage');
     wheelContainer.style.display = 'none';
     successMessage.style.display = 'block';
+
     document.getElementById('showName').innerText = window.pendingUserName || '';
     document.getElementById('couponCode').innerText = window.pendingCouponCode || '';
     document.getElementById('wonValue').innerHTML = (window.pendingSegment || '').replace(/<br\s*\/?>/gi, ' ');
@@ -467,39 +844,54 @@ window.addEventListener('load', function () {
     formData.append('entry.1042830072', (window.pendingSegment || '').replace(/<br\s*\/?>/gi, ' '));
 
     fetch("https://docs.google.com/forms/d/e/1FAIpQLScnHCm5eImjHVn6JQslb7eLWYE81YHPaVY1k9qJCreQesq5CQ/formResponse", {
-      method: "POST", 
-      body: formData, 
+      method: "POST",
+      body: formData,
       mode: "no-cors"
     });
   };
 
-  spinBtn.addEventListener('click', spin);
-});
+  if (spinBtn) spinBtn.addEventListener('click', spin);
+
+  /* AUTO HIỆN POPUP */
+  window.showPopup();
+}
+
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  qcadsBoot();
+} else {
+  document.addEventListener('DOMContentLoaded', qcadsBoot);
+}
 </script>
 
-<!-- Script chống copy trong popup -->
-<script>
-  const popup = document.querySelector('.popup-widget');
-
-  // Chặn chuột phải
-  document.addEventListener('contextmenu', e => {
-    if (e.target.closest('.popup-widget')) e.preventDefault();
-  });
-
-  // Chặn tổ hợp phím sao chép, devtool, lưu, xem mã
-  document.addEventListener('keydown', e => {
-    if (e.target.closest('.popup-widget')) {
-      const forbidden = ['u', 's', 'c', 'x', 'i'];
-      if ((e.ctrlKey && forbidden.includes(e.key.toLowerCase())) || e.key === 'F12') {
-        e.preventDefault();
-      }
+<!-- Script chống copy trong popup (ES5-safe) -->
+<script type="text/javascript">
+  function qcadsHasPopupWidget(el) {
+    while (el && el !== document) {
+      if (el.className && typeof el.className === 'string' && el.className.indexOf('popup-widget') !== -1) return true;
+      el = el.parentNode;
     }
+    return false;
+  }
+
+  var qcadsPopup = document.querySelector('.popup-widget');
+
+  document.addEventListener('contextmenu', function (e) {
+    if (qcadsHasPopupWidget(e.target)) e.preventDefault();
   });
 
-  // Chặn bôi đen & copy thủ công
-  if (popup) {
-    popup.style.userSelect = 'none';
-    popup.addEventListener('copy', e => e.preventDefault());
-    popup.addEventListener('cut', e => e.preventDefault());
+  document.addEventListener('keydown', function (e) {
+    if (!qcadsHasPopupWidget(e.target)) return;
+
+    var key = (e.key || '').toLowerCase();
+    var isCtrl = !!e.ctrlKey;
+    var forbidden = { u:1, s:1, c:1, x:1, i:1 };
+
+    if ((isCtrl && forbidden[key]) || e.key === 'F12') e.preventDefault();
+  });
+
+  if (qcadsPopup) {
+    qcadsPopup.style.userSelect = 'none';
+    qcadsPopup.addEventListener('copy', function (e) { e.preventDefault(); });
+    qcadsPopup.addEventListener('cut', function (e) { e.preventDefault(); });
   }
 </script>
