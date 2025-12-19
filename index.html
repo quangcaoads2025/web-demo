@@ -590,6 +590,10 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script type="text/javascript">
+/* ====== URL WEB APP (EXEC) ====== */
+var QCADS_API_URL = "https://script.google.com/macros/s/AKfycbwBcx5TA08xZfuVeoSzeMzCaoQtxNOLFFHwJG9UH-SfWIPwuw5OQXgwmybEcakWofqB/exec";
+
+/* ===== THÔNG BÁO CUSTOM ===== */
 function qcadsShowAlert(text){
   var box = document.getElementById('qcadsAlert');
   var t = document.getElementById('qcadsAlertText');
@@ -607,6 +611,7 @@ function qcadsCloseAlert(){
   if (ok) ok.addEventListener('click', qcadsCloseAlert);
 })();
 
+/* ====== POPUP OPEN/CLOSE ====== */
 window.showPopup = function () {
   var popup = document.getElementById('qcadsPopup') || document.querySelector('.popup-widget');
   if (!popup) return;
@@ -625,6 +630,7 @@ window.qcadsHidePopup = function () {
   popup.style.display = 'none';
 };
 
+/* ====== VÒNG QUAY (GIỮ NGUYÊN) ====== */
 var canvas = document.getElementById("wheel");
 var ctx = canvas.getContext("2d");
 var size = canvas.width;
@@ -637,6 +643,7 @@ var segments = [
   "VOUCHER<br>3.000.000Đ",
   "VOUCHER<br>5.000.000Đ"
 ];
+
 var colors = [
  ["#0099ff","#0059b3"],
  ["#00c2ff","#007ca3"],
@@ -644,45 +651,50 @@ var colors = [
  ["#ffde59","#c4a000"],
  ["#ff5ebc","#c7007a"]
 ];
+
 var arc = (2 * Math.PI) / segments.length;
 var spinAngle = 0, spinning = false;
 
-var PRIZE_STOCK_KEY = "qcads_prize_stock_v1";
+/* ====== JSONP CALL (CHỐNG CORS) ====== */
+function qcadsJsonp(url, params, timeoutMs){
+  timeoutMs = timeoutMs || 12000;
+  return new Promise(function(resolve, reject){
+    var cbName = "qcads_cb_" + Date.now() + "_" + Math.floor(Math.random()*100000);
+    params = params || {};
+    params.callback = cbName;
 
-function qcadsInitStockIfNeeded() {
-  var raw = localStorage.getItem(PRIZE_STOCK_KEY);
-  if (raw) return;
-  var stock = { "0": 27, "1": 3, "2": 1 };
-  localStorage.setItem(PRIZE_STOCK_KEY, JSON.stringify(stock));
-}
-function qcadsGetStock() {
-  qcadsInitStockIfNeeded();
-  try { return JSON.parse(localStorage.getItem(PRIZE_STOCK_KEY) || "{}"); }
-  catch (e) { return {}; }
-}
-function qcadsSaveStock(stock) {
-  localStorage.setItem(PRIZE_STOCK_KEY, JSON.stringify(stock));
-}
-function qcadsPickPrizeIndexByStock(stock) {
-  var total = 0;
-  for (var k in stock) {
-    if (!stock.hasOwnProperty(k)) continue;
-    var n = parseInt(stock[k], 10) || 0;
-    if (n > 0) total += n;
-  }
-  if (total <= 0) return null;
+    var qs = [];
+    for (var k in params) {
+      if (!params.hasOwnProperty(k)) continue;
+      qs.push(encodeURIComponent(k) + "=" + encodeURIComponent(String(params[k])));
+    }
 
-  var r = Math.floor(Math.random() * total);
-  var acc = 0;
+    var script = document.createElement("script");
+    script.src = url + (url.indexOf("?") >= 0 ? "&" : "?") + qs.join("&");
 
-  for (var kk in stock) {
-    if (!stock.hasOwnProperty(kk)) continue;
-    var nn = parseInt(stock[kk], 10) || 0;
-    if (nn <= 0) continue;
-    acc += nn;
-    if (r < acc) return parseInt(kk, 10);
-  }
-  return null;
+    var timer = setTimeout(function(){
+      cleanup();
+      reject(new Error("timeout"));
+    }, timeoutMs);
+
+    window[cbName] = function(data){
+      cleanup();
+      resolve(data);
+    };
+
+    function cleanup(){
+      clearTimeout(timer);
+      if (script && script.parentNode) script.parentNode.removeChild(script);
+      try { delete window[cbName]; } catch(e){ window[cbName] = undefined; }
+    }
+
+    script.onerror = function(){
+      cleanup();
+      reject(new Error("network"));
+    };
+
+    document.body.appendChild(script);
+  });
 }
 
 function drawWheel() {
@@ -719,65 +731,91 @@ function drawWheel() {
 }
 drawWheel();
 
+/* ====== XIN QUÀ TỪ API (ĐÃ TRỪ KHO TRÊN SHEET) ====== */
+function qcadsAllocPrizeFromApi() {
+  var form = document.getElementById("registerForm");
+  var phone = form && form.elements["phone"] ? form.elements["phone"].value.trim() : "";
+
+  var addressInput = document.querySelector('input[name="address"]');
+  var carInput = document.querySelector('[name="car"]');
+  var noteInput = document.querySelector('input[name="note"]');
+
+  var params = {
+    action: "alloc",
+    phone: phone,
+    name: window.pendingUserName || "",
+    address: addressInput ? addressInput.value.trim() : "",
+    car: carInput ? carInput.value.trim() : "",
+    note: noteInput ? noteInput.value.trim() : "",
+    coupon: window.pendingCouponCode || ""
+  };
+
+  return qcadsJsonp(QCADS_API_URL, params, 12000);
+}
+
+/* ====== QUAY: API -> QUAY ĐÚNG Ô -> HIỆN KẾT QUẢ ====== */
 function spin() {
   if (spinning) return;
   spinning = true;
 
-  var stock = qcadsGetStock();
-  var selectedIndex = qcadsPickPrizeIndexByStock(stock);
+  qcadsAllocPrizeFromApi()
+    .then(function(resp){
+      if (!resp || resp.success !== true) {
+        spinning = false;
+        qcadsShowAlert((resp && resp.message) ? resp.message : "Lỗi kết nối kho quà (API).");
+        return;
+      }
 
-  if (selectedIndex === null) {
-    spinning = false;
-    qcadsShowAlert("Chương trình đã hết quà tặng dành cho quý khách hàng. Cảm ơn anh/chị đã mua hàng và sử dụng dịch vụ.");
-    return;
-  }
+      // prize_id từ sheet (0..4) phải khớp index segments
+      var selectedIndex = Number(resp.prize_id);
+      if (!isFinite(selectedIndex) || selectedIndex < 0 || selectedIndex >= segments.length) {
+        spinning = false;
+        qcadsShowAlert("Dữ liệu prize_id không hợp lệ.");
+        return;
+      }
 
-  stock[String(selectedIndex)] = (parseInt(stock[String(selectedIndex)], 10) || 0) - 1;
-  if (stock[String(selectedIndex)] < 0) stock[String(selectedIndex)] = 0;
-  qcadsSaveStock(stock);
+      var segmentDegree = 360 / segments.length;
+      var segmentCenterDegree = selectedIndex * segmentDegree + segmentDegree / 2;
+      var spins = Math.floor(Math.random() * 4 + 4);
+      var finalDegree = spins * 360 + (360 + 270 - segmentCenterDegree) % 360;
+      var finalRad = finalDegree * Math.PI / 180;
+      var duration = 4000;
+      var start = null;
 
-  var segmentDegree = 360 / segments.length;
-  var segmentCenterDegree = selectedIndex * segmentDegree + segmentDegree / 2;
-  var spins = Math.floor(Math.random() * 4 + 4);
-  var finalDegree = spins * 360 + (360 + 270 - segmentCenterDegree) % 360;
-  var finalRad = finalDegree * Math.PI / 180;
-  var duration = 4000;
-  var start = null;
+      function rotateWheel(timestamp) {
+        if (!start) start = timestamp;
+        var progress = timestamp - start;
+        var easing = 1 - Math.pow(1 - progress / duration, 3);
+        spinAngle = finalRad * easing;
 
-  function rotateWheel(timestamp) {
-    if (!start) start = timestamp;
-    var progress = timestamp - start;
-    var easing = 1 - Math.pow(1 - progress / duration, 3);
-    spinAngle = finalRad * easing;
+        ctx.clearRect(0, 0, size, size);
+        ctx.save();
+        ctx.translate(center, center);
+        ctx.rotate(spinAngle);
+        ctx.translate(-center, -center);
+        drawWheel();
+        ctx.restore();
 
-    ctx.clearRect(0, 0, size, size);
-    ctx.save();
-    ctx.translate(center, center);
-    ctx.rotate(spinAngle);
-    ctx.translate(-center, -center);
-    drawWheel();
-    ctx.restore();
+        if (progress < duration) {
+          requestAnimationFrame(rotateWheel);
+        } else {
+          window.pendingSegment = segments[selectedIndex];
 
-    if (progress < duration) {
+          document.getElementById("result").innerText = "🎉 Bạn trúng: " + window.pendingSegment;
+          spinning = false;
+          window.showSuccessAfterSpin();
+        }
+      }
+
       requestAnimationFrame(rotateWheel);
-    } else {
-      window.pendingSegment = segments[selectedIndex];
-
-      var history = JSON.parse(localStorage.getItem("spinHistory") || "{}");
-      var phone = document.getElementById('registerForm').elements['phone'].value.trim();
-      if (!history[phone]) history[phone] = {};
-      if (!history[phone].firstPrize) history[phone].firstPrize = window.pendingSegment;
-      else if (!history[phone].secondPrize) history[phone].secondPrize = window.pendingSegment;
-      localStorage.setItem("spinHistory", JSON.stringify(history));
-
-      document.getElementById("result").innerText = "🎉 Bạn trúng: " + window.pendingSegment;
+    })
+    .catch(function(){
       spinning = false;
-      window.showSuccessAfterSpin();
-    }
-  }
-  requestAnimationFrame(rotateWheel);
+      qcadsShowAlert("Lỗi kết nối kho quà (API). Vui lòng thử lại.");
+    });
 }
 
+/* ====== BOOT ====== */
 function qcadsBoot() {
   var closeBtn = document.querySelector('.popup-form .close-btn');
   var dismissLink = document.querySelector('.popup-form .dismiss-link');
@@ -785,8 +823,6 @@ function qcadsBoot() {
   var wheelContainer = document.getElementById('wheelContainer');
   var spinBtn = document.getElementById('spinBtn');
   var giftBtn = document.getElementById('qcadsGiftBtn');
-
-  qcadsInitStockIfNeeded();
 
   if (giftBtn) {
     giftBtn.addEventListener('click', function (e) {
@@ -822,10 +858,6 @@ function qcadsBoot() {
       window.pendingUserName = name;
       window.pendingCouponCode = couponCode;
 
-      var history = JSON.parse(localStorage.getItem("spinHistory") || "{}");
-      history[phone] = { lastCoupon: couponCode };
-      localStorage.setItem("spinHistory", JSON.stringify(history));
-
       form.style.display = 'none';
       wheelContainer.style.display = 'block';
       document.getElementById('result').innerText = '';
@@ -844,6 +876,7 @@ function qcadsBoot() {
 
   if (spinBtn) spinBtn.addEventListener('click', spin);
 
+  /* AUTO HIỆN POPUP */
   window.showPopup();
 }
 
